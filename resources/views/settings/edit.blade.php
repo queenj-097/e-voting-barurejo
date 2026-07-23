@@ -197,48 +197,192 @@
                     </h5>
 
                     <p class="text-secondary">
-                        Reset akan menghapus seluruh surat suara dan
-                        mengembalikan status semua pemilih menjadi belum
-                        memilih. Data kandidat dan data pemilih tetap ada.
+                        Tindakan ini akan menghapus seluruh surat suara dan
+                        mengembalikan status semua pemilih serta bilik ke kondisi awal.
+                        Data kandidat dan data pemilih tetap tersimpan.
                     </p>
 
                     <div class="alert alert-warning">
-                        <strong>
-                            Data yang akan direset:
-                        </strong>
+                        <strong>Data yang akan direset:</strong>
 
                         <ul class="mb-0 mt-2">
                             <li>Seluruh surat suara dan token QR</li>
-                            <li>Status sudah memilih</li>
-                            <li>Waktu memilih</li>
+                            <li>Status sudah memilih seluruh pemilih</li>
+                            <li>Waktu pemungutan suara</li>
                             <li>Status seluruh bilik</li>
                             <li>Hasil rekapitulasi suara</li>
                         </ul>
                     </div>
 
-                    <form
-                        action="{{ route('settings.reset-election') }}"
-                        method="POST"
-                        onsubmit="return confirm('Yakin ingin mereset seluruh data pemilihan? Tindakan ini tidak dapat dibatalkan.')"
+                    <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#resetElectionModal"
                     >
-                        @csrf
-                        @method('DELETE')
-
-                        <button
-                            type="submit"
-                            class="btn btn-outline-danger"
-                        >
-                            <i class="bi bi-arrow-counterclockwise me-1"></i>
-                            Reset Data Pemilihan
-                        </button>
-                    </form>
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Reset Data Pemilihan
+                    </button>
 
                 </div>
             </div>
 
+            {{-- Modal konfirmasi reset --}}
+            <div
+                class="modal fade"
+                id="resetElectionModal"
+                tabindex="-1"
+                aria-labelledby="resetElectionModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+
+                        <div class="modal-header border-0 pb-0">
+                            <h5
+                                class="modal-title fw-bold text-danger"
+                                id="resetElectionModalLabel"
+                            >
+                                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                                Konfirmasi Reset Pemilihan
+                            </h5>
+
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Tutup"
+                            ></button>
+                        </div>
+
+                        <div class="modal-body p-4">
+
+                            <div class="alert alert-danger">
+                                <strong>Perhatian!</strong>
+                                Tindakan ini tidak dapat dibatalkan. Seluruh surat suara
+                                dan hasil penghitungan akan dihapus secara permanen.
+                            </div>
+
+                            <p class="mb-2">
+                                Untuk melanjutkan, ketik:
+                            </p>
+
+                            <div
+                                class="border rounded-3 bg-light text-danger fw-bold
+                                    text-center py-3 mb-3"
+                            >
+                                RESET PEMILIHAN
+                            </div>
+
+                            <label
+                                for="resetConfirmationInput"
+                                class="form-label fw-semibold"
+                            >
+                                Konfirmasi
+                            </label>
+
+                            <input
+                                type="text"
+                                id="resetConfirmationInput"
+                                class="form-control"
+                                placeholder="Ketik RESET PEMILIHAN"
+                                autocomplete="off"
+                            >
+
+                            <small
+                                id="resetConfirmationHelp"
+                                class="text-secondary"
+                            >
+                                Tombol reset akan aktif setelah teks sesuai.
+                            </small>
+
+                        </div>
+
+                        <div class="modal-footer border-0 pt-0">
+
+                            <button
+                                type="button"
+                                class="btn btn-light border"
+                                data-bs-dismiss="modal"
+                            >
+                                Batal
+                            </button>
+
+                            <form
+                                action="{{ route('settings.reset-election') }}"
+                                method="POST"
+                                id="resetElectionForm"
+                            >
+                                @csrf
+                                @method('DELETE')
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger"
+                                    id="resetElectionButton"
+                                    disabled
+                                >
+                                    <i class="bi bi-trash3-fill me-1"></i>
+                                    Ya, Reset Pemilihan
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const confirmationInput =
+            document.getElementById('resetConfirmationInput');
 
+        const resetButton =
+            document.getElementById('resetElectionButton');
+
+        const resetModal =
+            document.getElementById('resetElectionModal');
+
+        const requiredText = 'RESET PEMILIHAN';
+
+        if (confirmationInput && resetButton) {
+            confirmationInput.addEventListener('input', function () {
+                const isValid =
+                    confirmationInput.value.trim() === requiredText;
+
+                resetButton.disabled = !isValid;
+
+                confirmationInput.classList.toggle(
+                    'is-valid',
+                    isValid
+                );
+
+                confirmationInput.classList.toggle(
+                    'is-invalid',
+                    confirmationInput.value.length > 0 && !isValid
+                );
+            });
+        }
+
+        if (resetModal) {
+            resetModal.addEventListener('hidden.bs.modal', function () {
+                confirmationInput.value = '';
+                confirmationInput.classList.remove(
+                    'is-valid',
+                    'is-invalid'
+                );
+
+                resetButton.disabled = true;
+            });
+
+            resetModal.addEventListener('shown.bs.modal', function () {
+                confirmationInput.focus();
+            });
+        }
+    });
+</script>   
+    
 @endsection

@@ -6,11 +6,24 @@
 
 <div class="container-fluid">
 
-    <div class="mb-4">
-        <h1 class="page-heading">Hasil Suara</h1>
-        <p class="text-secondary mb-0">
-            Rekap hasil pemungutan suara elektronik Desa Barurejo.
-        </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h1 class="page-heading mb-1">
+                Rekapitulasi
+            </h1>
+
+            <p class="text-secondary mb-0">
+                Rekap hasil pemungutan suara elektronik.
+            </p>
+        </div>
+
+        <a
+            href="{{ route('results.pdf') }}"
+            class="btn btn-danger mt-3 mt-md-0"
+        >
+            <i class="bi bi-file-earmark-pdf-fill me-1"></i>
+            Download PDF
+        </a>
     </div>
 
     <div class="row g-4 mb-4">

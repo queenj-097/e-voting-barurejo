@@ -6,6 +6,7 @@
 
 <div class="container-fluid">
 
+    {{-- Header --}}
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
         <div>
             <h1 class="page-heading mb-1">
@@ -13,14 +14,15 @@
             </h1>
 
             <p class="text-secondary mb-0">
-                Ringkasan pelaksanaan {{ $setting?->title ?? 'pemungutan suara elektronik' }}
-oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
+                Ringkasan pelaksanaan
+                {{ $setting?->title ?? 'pemungutan suara elektronik' }}
+                oleh
+                {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
             </p>
         </div>
 
         <div class="mt-3 mt-lg-0 text-lg-end">
-
-            @if($setting?->election_date)
+            @if ($setting?->election_date)
                 <div class="fw-semibold">
                     {{ $setting->election_date->translatedFormat('l, d F Y') }}
                 </div>
@@ -33,10 +35,16 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
             <small class="text-secondary">
                 Status:
                 <span class="fw-semibold">
-                    {{ ucfirst($setting?->status ?? 'Persiapan') }}
+                    {{ ucfirst($setting?->status ?? 'persiapan') }}
                 </span>
             </small>
 
+            <div>
+                <small class="text-success">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 7px;"></i>
+                    Data diperbarui otomatis
+                </small>
+            </div>
         </div>
     </div>
 
@@ -52,7 +60,10 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                 Total DPT
                             </p>
 
-                            <h2 class="fw-bold mb-1">
+                            <h2
+                                id="totalVoters"
+                                class="fw-bold mb-1"
+                            >
                                 {{ $totalVoters }}
                             </h2>
 
@@ -78,12 +89,17 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                 Sudah Memilih
                             </p>
 
-                            <h2 class="fw-bold text-success mb-1">
+                            <h2
+                                id="voted"
+                                class="fw-bold text-success mb-1"
+                            >
                                 {{ $votedVoters }}
                             </h2>
 
                             <small class="text-secondary">
-                                {{ $participationPercentage }}% dari total DPT
+                                <span id="participationPercentage">
+                                    {{ $participationPercentage }}
+                                </span>% dari total DPT
                             </small>
                         </div>
 
@@ -104,7 +120,10 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                 Belum Memilih
                             </p>
 
-                            <h2 class="fw-bold text-danger mb-1">
+                            <h2
+                                id="notVoted"
+                                class="fw-bold text-danger mb-1"
+                            >
                                 {{ $notVotedVoters }}
                             </h2>
 
@@ -130,7 +149,10 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                 Surat Suara Masuk
                             </p>
 
-                            <h2 class="fw-bold mb-1">
+                            <h2
+                                id="ballots"
+                                class="fw-bold mb-1"
+                            >
                                 {{ $totalBallots }}
                             </h2>
 
@@ -156,7 +178,10 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                 Sudah Dihitung
                             </p>
 
-                            <h2 class="fw-bold text-success mb-1">
+                            <h2
+                                id="counted"
+                                class="fw-bold text-success mb-1"
+                            >
                                 {{ $countedBallots }}
                             </h2>
 
@@ -182,7 +207,10 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                 Belum Dihitung
                             </p>
 
-                            <h2 class="fw-bold text-warning mb-1">
+                            <h2
+                                id="uncounted"
+                                class="fw-bold text-warning mb-1"
+                            >
                                 {{ $uncountedBallots }}
                             </h2>
 
@@ -201,6 +229,7 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
 
     </div>
 
+    {{-- Hasil sementara --}}
     <div class="row g-4 mb-4">
 
         {{-- Pemenang sementara --}}
@@ -213,8 +242,10 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                     </h5>
                 </div>
 
-                <div class="card-body p-4 text-center">
-
+                <div
+                    id="temporaryWinnerCard"
+                    class="card-body p-4 text-center"
+                >
                     @if ($temporaryWinner)
 
                         @if ($temporaryWinner->photo)
@@ -269,7 +300,6 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                         </p>
 
                     @endif
-
                 </div>
             </div>
         </div>
@@ -282,21 +312,28 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                         Perolehan Suara Sementara
                     </h5>
 
-                    <a
-                        href="{{ route('results.index') }}"
-                        class="btn btn-sm btn-outline-success"
-                    >
-                        Lihat Rekapitulasi
-                    </a>
+                    @if (auth()->user()->role === 'admin')
+                        <a
+                            href="{{ route('results.index') }}"
+                            class="btn btn-sm btn-outline-success"
+                        >
+                            Lihat Rekapitulasi
+                        </a>
+                    @endif
                 </div>
 
-                <div class="card-body p-4">
-
+                <div
+                    id="candidateResults"
+                    class="card-body p-4"
+                >
                     @forelse ($candidates as $candidate)
 
                         @php
                             $percentage = $countedBallots > 0
-                                ? round(($candidate->counted_votes / $countedBallots) * 100, 1)
+                                ? round(
+                                    ($candidate->counted_votes / $countedBallots) * 100,
+                                    1
+                                )
                                 : 0;
                         @endphp
 
@@ -315,6 +352,13 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                             class="rounded-circle border"
                                             style="object-fit: cover;"
                                         >
+                                    @else
+                                        <div
+                                            class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center"
+                                            style="width: 48px; height: 48px;"
+                                        >
+                                            <i class="bi bi-person-fill text-secondary"></i>
+                                        </div>
                                     @endif
 
                                     <div>
@@ -341,9 +385,6 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                                     class="progress-bar bg-success"
                                     role="progressbar"
                                     style="width: {{ $percentage }}%;"
-                                    aria-valuenow="{{ $percentage }}"
-                                    aria-valuemin="0"
-                                    aria-valuemax="100"
                                 >
                                     @if ($percentage >= 10)
                                         {{ $percentage }}%
@@ -360,7 +401,6 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                         </div>
 
                     @endforelse
-
                 </div>
             </div>
         </div>
@@ -426,13 +466,11 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
 
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div>
-                                    <h5 class="fw-bold mb-1 booth-name">
+                                    <h5 class="fw-bold mb-1">
                                         {{ $booth->name }}
                                     </h5>
 
-                                    <span
-                                        class="badge text-bg-{{ $statusClass }} booth-status"
-                                    >
+                                    <span class="badge text-bg-{{ $statusClass }} booth-status">
                                         {{ $statusLabel }}
                                     </span>
                                 </div>
@@ -477,13 +515,11 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                     </div>
 
                 @empty
-
                     <div class="col-12">
                         <div class="text-center text-secondary py-4">
                             Belum ada bilik yang dibuat.
                         </div>
                     </div>
-
                 @endforelse
             </div>
         </div>
@@ -499,45 +535,51 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
 
             <div class="d-flex flex-wrap gap-2">
 
-                <a
-                    href="{{ route('voters.index') }}"
-                    class="btn btn-outline-primary"
-                >
-                    <i class="bi bi-people-fill me-1"></i>
-                    Data DPT
-                </a>
+                @if (auth()->user()->role === 'admin')
+                    <a
+                        href="{{ route('voters.index') }}"
+                        class="btn btn-outline-primary"
+                    >
+                        <i class="bi bi-people-fill me-1"></i>
+                        Data DPT
+                    </a>
 
-                <a
-                    href="{{ route('candidates.index') }}"
-                    class="btn btn-outline-primary"
-                >
-                    <i class="bi bi-person-badge-fill me-1"></i>
-                    Data Kandidat
-                </a>
+                    <a
+                        href="{{ route('candidates.index') }}"
+                        class="btn btn-outline-primary"
+                    >
+                        <i class="bi bi-person-badge-fill me-1"></i>
+                        Data Kandidat
+                    </a>
 
-                <a
-                    href="{{ route('verification.index') }}"
-                    class="btn btn-outline-success"
-                >
-                    <i class="bi bi-person-check-fill me-1"></i>
-                    Verifikasi Pemilih
-                </a>
+                    <a
+                        href="{{ route('results.index') }}"
+                        class="btn btn-outline-dark"
+                    >
+                        <i class="bi bi-bar-chart-fill me-1"></i>
+                        Rekapitulasi
+                    </a>
+                @endif
 
-                <a
-                    href="{{ route('scan.index') }}"
-                    class="btn btn-outline-success"
-                >
-                    <i class="bi bi-qr-code-scan me-1"></i>
-                    Scan QR
-                </a>
+                @if (in_array(auth()->user()->role, ['admin', 'verifikator'], true))
+                    <a
+                        href="{{ route('verification.index') }}"
+                        class="btn btn-outline-success"
+                    >
+                        <i class="bi bi-person-check-fill me-1"></i>
+                        Verifikasi Pemilih
+                    </a>
+                @endif
 
-                <a
-                    href="{{ route('results.index') }}"
-                    class="btn btn-outline-dark"
-                >
-                    <i class="bi bi-bar-chart-fill me-1"></i>
-                    Rekapitulasi
-                </a>
+                @if (in_array(auth()->user()->role, ['admin', 'scanner'], true))
+                    <a
+                        href="{{ route('scan.index') }}"
+                        class="btn btn-outline-success"
+                    >
+                        <i class="bi bi-qr-code-scan me-1"></i>
+                        Scan QR
+                    </a>
+                @endif
 
             </div>
 
@@ -553,7 +595,210 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
 </div>
 
 <script>
+    const dashboardLiveUrl = @json(route('dashboard.live'));
     const boothStatusUrl = @json(route('booths.status'));
+
+    function escapeHtml(value) {
+        const element = document.createElement('div');
+        element.textContent = String(value ?? '');
+        return element.innerHTML;
+    }
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+    function renderTemporaryWinner(winner) {
+        const container = document.getElementById('temporaryWinnerCard');
+
+        if (!container) {
+            return;
+        }
+
+        if (!winner) {
+            container.innerHTML = `
+                <div
+                    class="rounded-circle bg-secondary-subtle d-flex
+                    align-items-center justify-content-center mx-auto mb-3"
+                    style="width:110px;height:110px;"
+                >
+                    <i class="bi bi-hourglass fs-1 text-secondary"></i>
+                </div>
+
+                <h5 class="fw-bold">
+                    Belum Ada Suara Dihitung
+                </h5>
+
+                <p class="text-secondary mb-0">
+                    Hasil sementara akan muncul setelah QR divalidasi.
+                </p>
+            `;
+
+            return;
+        }
+
+        const photo = winner.photo_url
+            ? `
+                <img
+                    src="${escapeHtml(winner.photo_url)}"
+                    alt="Foto ${escapeHtml(winner.name)}"
+                    width="130"
+                    height="130"
+                    class="rounded-circle border mb-3"
+                    style="object-fit:cover;"
+                >
+            `
+            : `
+                <div
+                    class="rounded-circle bg-secondary-subtle d-flex
+                    align-items-center justify-content-center mx-auto mb-3"
+                    style="width:130px;height:130px;"
+                >
+                    <i class="bi bi-person-fill fs-1 text-secondary"></i>
+                </div>
+            `;
+
+        container.innerHTML = `
+            ${photo}
+
+            <div class="badge text-bg-success mb-2">
+                Nomor Urut ${escapeHtml(winner.number)}
+            </div>
+
+            <h3 class="fw-bold">
+                ${escapeHtml(winner.name)}
+            </h3>
+
+            <div class="display-6 fw-bold text-success">
+                ${escapeHtml(winner.counted_votes)}
+            </div>
+
+            <p class="text-secondary mb-0">
+                suara sah
+            </p>
+        `;
+    }
+
+    function renderCandidateResults(candidates) {
+        const container = document.getElementById('candidateResults');
+
+        if (!container) {
+            return;
+        }
+
+        if (!candidates.length) {
+            container.innerHTML = `
+                <div class="text-center py-5 text-secondary">
+                    Belum ada kandidat.
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML = candidates.map((candidate) => {
+            const photo = candidate.photo_url
+                ? `
+                    <img
+                        src="${escapeHtml(candidate.photo_url)}"
+                        alt="${escapeHtml(candidate.name)}"
+                        width="48"
+                        height="48"
+                        class="rounded-circle border"
+                        style="object-fit:cover;"
+                    >
+                `
+                : `
+                    <div
+                        class="rounded-circle bg-secondary-subtle d-flex
+                        align-items-center justify-content-center"
+                        style="width:48px;height:48px;"
+                    >
+                        <i class="bi bi-person-fill text-secondary"></i>
+                    </div>
+                `;
+
+            const progressText = candidate.percentage >= 10
+                ? `${candidate.percentage}%`
+                : '';
+
+            return `
+                <div class="mb-4">
+
+                    <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+
+                        <div class="d-flex align-items-center gap-3">
+                            ${photo}
+
+                            <div>
+                                <div class="fw-bold">
+                                    No. ${escapeHtml(candidate.number)} —
+                                    ${escapeHtml(candidate.name)}
+                                </div>
+
+                                <small class="text-secondary">
+                                    ${escapeHtml(candidate.percentage)}%
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="fw-bold">
+                            ${escapeHtml(candidate.counted_votes)} suara
+                        </div>
+
+                    </div>
+
+                    <div class="progress" style="height:18px;">
+                        <div
+                            class="progress-bar bg-success"
+                            role="progressbar"
+                            style="width:${candidate.percentage}%;"
+                        >
+                            ${progressText}
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function refreshDashboard() {
+        try {
+            const response = await fetch(dashboardLiveUrl, {
+                headers: {
+                    'Accept': 'application/json'
+                },
+                cache: 'no-store'
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal mengambil data dashboard.');
+            }
+
+            const data = await response.json();
+
+            setText('totalVoters', data.total_voters);
+            setText('voted', data.voted);
+            setText('notVoted', data.not_voted);
+            setText('ballots', data.ballots);
+            setText('counted', data.counted);
+            setText('uncounted', data.uncounted);
+            setText(
+                'participationPercentage',
+                data.participation_percentage
+            );
+
+            renderTemporaryWinner(data.temporary_winner);
+            renderCandidateResults(data.candidates ?? []);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     function getBoothDisplay(status) {
         const displays = {
@@ -611,38 +856,44 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
                 const iconBox = card.querySelector('.booth-icon');
                 const voterBox = card.querySelector('.booth-voter');
 
-                badge.className =
-                    `badge text-bg-${display.color} booth-status`;
+                if (badge) {
+                    badge.className =
+                        `badge text-bg-${display.color} booth-status`;
 
-                badge.textContent = display.label;
+                    badge.textContent = display.label;
+                }
 
-                iconBox.className =
-                    `rounded-3 bg-${display.color}-subtle ` +
-                    `text-${display.color} p-3 booth-icon`;
+                if (iconBox) {
+                    iconBox.className =
+                        `rounded-3 bg-${display.color}-subtle ` +
+                        `text-${display.color} p-3 booth-icon`;
 
-                iconBox.innerHTML =
-                    `<i class="bi ${display.icon} fs-4"></i>`;
+                    iconBox.innerHTML =
+                        `<i class="bi ${display.icon} fs-4"></i>`;
+                }
 
-                if (booth.voter_name) {
-                    voterBox.innerHTML = `
-                        <small class="text-secondary">
-                            Pemilih
-                        </small>
+                if (voterBox) {
+                    if (booth.voter_name) {
+                        voterBox.innerHTML = `
+                            <small class="text-secondary">
+                                Pemilih
+                            </small>
 
-                        <div class="fw-bold">
-                            ${escapeHtml(booth.voter_name)}
-                        </div>
+                            <div class="fw-bold">
+                                ${escapeHtml(booth.voter_name)}
+                            </div>
 
-                        <small class="text-secondary">
-                            ${escapeHtml(booth.dpt_number ?? '-')}
-                        </small>
-                    `;
-                } else {
-                    voterBox.innerHTML = `
-                        <span class="text-secondary">
-                            Belum ada pemilih.
-                        </span>
-                    `;
+                            <small class="text-secondary">
+                                ${escapeHtml(booth.dpt_number ?? '-')}
+                            </small>
+                        `;
+                    } else {
+                        voterBox.innerHTML = `
+                            <span class="text-secondary">
+                                Belum ada pemilih.
+                            </span>
+                        `;
+                    }
                 }
             });
         } catch (error) {
@@ -650,19 +901,11 @@ oleh {{ $setting?->institution ?? 'Pemerintah Desa Barurejo' }}.
         }
     }
 
-    function escapeHtml(value) {
-        const element = document.createElement('div');
-        element.textContent = String(value);
-        return element.innerHTML;
-    }
+    refreshDashboard();
+    refreshBoothMonitor();
 
+    setInterval(refreshDashboard, 3000);
     setInterval(refreshBoothMonitor, 2000);
-</script>
-
-<script>
-    setTimeout(function () {
-        window.location.reload();
-    }, 5000);
 </script>
 
 @endsection
