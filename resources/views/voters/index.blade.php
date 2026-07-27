@@ -51,6 +51,7 @@
                     class="d-flex"
                 >
                     <div class="input-group">
+
                         <input
                             type="text"
                             name="search"
@@ -74,6 +75,7 @@
                                 Reset
                             </a>
                         @endif
+
                     </div>
                 </form>
 
@@ -90,6 +92,7 @@
                             <th class="ps-4">No. DPT</th>
                             <th>NIK</th>
                             <th>Nama Pemilih</th>
+                            <th>Dusun</th>
                             <th>Alamat</th>
                             <th>Status</th>
                             <th class="text-center">Aksi</th>
@@ -97,9 +100,11 @@
                     </thead>
 
                     <tbody>
+
                         @forelse ($voters as $voter)
 
                             <tr>
+
                                 <td class="ps-4">
                                     <strong>
                                         {{ $voter->dpt_number }}
@@ -115,19 +120,37 @@
                                 </td>
 
                                 <td>
+                                    @if($voter->dusun)
+                                        <span class="badge text-bg-primary">
+                                            {{ $voter->dusun->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-secondary">
+                                            -
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
                                     {{ $voter->address ?: '-' }}
                                 </td>
 
                                 <td>
+
                                     @if ($voter->has_voted)
+
                                         <span class="badge rounded-pill text-bg-success">
                                             Sudah Memilih
                                         </span>
+
                                     @else
+
                                         <span class="badge rounded-pill text-bg-secondary">
                                             Belum Memilih
                                         </span>
+
                                     @endif
+
                                 </td>
 
                                 <td class="text-center">
@@ -164,16 +187,18 @@
                                             <i class="bi bi-trash"></i>
                                             Hapus
                                         </button>
+
                                     </form>
 
                                 </td>
+
                             </tr>
 
                         @empty
 
                             <tr>
                                 <td
-                                    colspan="6"
+                                    colspan="7"
                                     class="text-center py-5 text-secondary"
                                 >
                                     <i class="bi bi-people fs-1 d-block mb-2"></i>
@@ -182,6 +207,7 @@
                             </tr>
 
                         @endforelse
+
                     </tbody>
 
                 </table>

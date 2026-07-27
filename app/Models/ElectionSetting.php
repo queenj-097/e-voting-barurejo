@@ -12,6 +12,7 @@ class ElectionSetting extends Model
         'location',
         'election_date',
         'status',
+        'candidate_scope',
     ];
 
     protected function casts(): array

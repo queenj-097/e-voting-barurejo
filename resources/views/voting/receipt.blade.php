@@ -78,33 +78,72 @@
         }
 
         @page {
+        size: 58mm auto;
+        margin: 0;
+    }
+
+    @media print {
+        html,
+        body {
+            width: 58mm;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white;
+        }
+
+        .wrapper {
+            width: 58mm;
             margin: 0;
+            padding: 0;
         }
 
-        @media print {
-            html,
-            body {
-                margin: 0;
-                padding: 0;
-                background: white;
-            }
-
-            .wrapper {
-                padding: 0;
-            }
-
-            .receipt-paper {
-                width: 100%;
-                max-width: none;
-                margin: 0;
-                border-radius: 0;
-                box-shadow: none;
-            }
-
-            .action-buttons {
-                display: none !important;
-            }
+        .receipt-paper {
+            box-sizing: border-box;
+            width: 58mm;
+            max-width: 58mm;
+            margin: 0;
+            padding: 5mm 4mm;
+            border-radius: 0;
+            box-shadow: none;
+            text-align: center;
+            overflow: hidden;
         }
+
+        .logo {
+            width: 16mm;
+            margin: 0 auto 3mm;
+            display: block;
+        }
+
+        .title {
+            font-size: 17px;
+        }
+
+        .subtitle {
+            font-size: 11px;
+        }
+
+        .qr-wrapper {
+            width: 44mm;
+            height: 44mm;
+            margin: 0 auto;
+        }
+
+        .qr-wrapper img {
+            display: block;
+            width: 44mm;
+            height: 44mm;
+            margin: 0 auto;
+        }
+
+        .small-text {
+            font-size: 10px;
+        }
+
+        .action-buttons {
+            display: none !important;
+        }
+    }
     </style>
 </head>
 
@@ -154,6 +193,9 @@
 
         <div class="small-text">
             QR hanya dapat dihitung satu kali.
+        </div>
+        <div class="small-text">
+            ---
         </div>
 
     </div>

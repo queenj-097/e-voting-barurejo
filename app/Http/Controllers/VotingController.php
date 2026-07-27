@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Ballot;
 use App\Models\Booth;
 use App\Models\Candidate;
+use App\Models\ElectionSetting;
 use App\Models\Voter;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\SvgWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\ElectionSetting;
 
 class VotingController extends Controller
 {
@@ -22,7 +22,10 @@ class VotingController extends Controller
         if (!$setting || $setting->status !== 'berlangsung') {
             return redirect()
                 ->route('verification.index')
-                ->with('error', 'Pemungutan suara sedang tidak berlangsung.');
+                ->with(
+                    'error',
+                    'Pemungutan suara sedang tidak berlangsung.'
+                );
         }
 
         $voterId = session('verified_voter_id');
@@ -30,10 +33,15 @@ class VotingController extends Controller
         if (!$voterId) {
             return redirect()
                 ->route('verification.index')
-                ->with('error', 'Silakan verifikasi pemilih terlebih dahulu.');
+                ->with(
+                    'error',
+                    'Silakan verifikasi pemilih terlebih dahulu.'
+                );
         }
 
-        $voter = Voter::findOrFail($voterId);
+        $voter = Voter::query()
+            ->with('dusun')
+            ->findOrFail($voterId);
 
         if ($voter->has_voted) {
             session()->forget([
@@ -43,14 +51,45 @@ class VotingController extends Controller
 
             return redirect()
                 ->route('verification.index')
-                ->with('error', 'Pemilih ini sudah menggunakan hak pilih.');
+                ->with(
+                    'error',
+                    'Pemilih ini sudah menggunakan hak pilih.'
+                );
         }
 
-        $candidates = Candidate::query()
-            ->orderBy('number')
-            ->get();
+        $candidateScope = $setting->candidate_scope ?? 'general';
 
-        return view('voting.index', compact('voter', 'candidates'));
+        if ($candidateScope === 'grouped') {
+            if (!$voter->dusun_id) {
+                return redirect()
+                    ->route('verification.index')
+                    ->with(
+                        'error',
+                        'Data dusun pemilih belum ditentukan. '
+                        . 'Silakan hubungi panitia.'
+                    );
+            }
+
+            $candidates = Candidate::query()
+                ->whereHas('dusuns', function ($query) use ($voter) {
+                    $query->where(
+                        'dusuns.id',
+                        $voter->dusun_id
+                    );
+                })
+                ->orderBy('number')
+                ->get();
+        } else {
+            $candidates = Candidate::query()
+                ->orderBy('number')
+                ->get();
+        }
+
+        return view('voting.index', [
+            'voter' => $voter,
+            'candidates' => $candidates,
+            'candidateScope' => $candidateScope,
+        ]);
     }
 
     public function store(Request $request)
@@ -60,7 +99,10 @@ class VotingController extends Controller
         if (!$setting || $setting->status !== 'berlangsung') {
             return redirect()
                 ->route('verification.index')
-                ->with('error', 'Pemungutan suara sudah ditutup.');
+                ->with(
+                    'error',
+                    'Pemungutan suara sudah ditutup.'
+                );
         }
 
         $validated = $request->validate([
@@ -69,8 +111,10 @@ class VotingController extends Controller
                 'exists:candidates,id',
             ],
         ], [
-            'candidate_id.required' => 'Silakan pilih salah satu kandidat.',
-            'candidate_id.exists' => 'Kandidat yang dipilih tidak tersedia.',
+            'candidate_id.required' =>
+                'Silakan pilih salah satu kandidat.',
+            'candidate_id.exists' =>
+                'Kandidat yang dipilih tidak tersedia.',
         ]);
 
         $voterId = session('verified_voter_id');
@@ -79,20 +123,85 @@ class VotingController extends Controller
         if (!$voterId) {
             return redirect()
                 ->route('verification.index')
-                ->with('error', 'Sesi verifikasi sudah tidak tersedia.');
+                ->with(
+                    'error',
+                    'Sesi verifikasi sudah tidak tersedia.'
+                );
+        }
+
+        $voter = Voter::query()
+            ->with('dusun')
+            ->findOrFail($voterId);
+
+        $candidateScope = $setting->candidate_scope ?? 'general';
+
+        if ($candidateScope === 'grouped') {
+            if (!$voter->dusun_id) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'candidate_id' =>
+                            'Data dusun pemilih belum ditentukan.',
+                    ]);
+            }
+
+            $candidateAllowed = Candidate::query()
+                ->whereKey($validated['candidate_id'])
+                ->whereHas('dusuns', function ($query) use ($voter) {
+                    $query->where(
+                        'dusuns.id',
+                        $voter->dusun_id
+                    );
+                })
+                ->exists();
+
+            if (!$candidateAllowed) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'candidate_id' =>
+                            'Kandidat tidak tersedia untuk dusun pemilih.',
+                    ]);
+            }
         }
 
         $ballot = DB::transaction(function () use (
             $validated,
             $voterId,
-            $boothId
+            $boothId,
+            $candidateScope
         ) {
             $voter = Voter::query()
                 ->lockForUpdate()
                 ->findOrFail($voterId);
 
             if ($voter->has_voted) {
-                abort(403, 'Pemilih ini sudah menggunakan hak pilih.');
+                abort(
+                    403,
+                    'Pemilih ini sudah menggunakan hak pilih.'
+                );
+            }
+
+            if ($candidateScope === 'grouped') {
+                $candidateAllowed = Candidate::query()
+                    ->whereKey($validated['candidate_id'])
+                    ->whereHas(
+                        'dusuns',
+                        function ($query) use ($voter) {
+                            $query->where(
+                                'dusuns.id',
+                                $voter->dusun_id
+                            );
+                        }
+                    )
+                    ->exists();
+
+                if (!$candidateAllowed) {
+                    abort(
+                        403,
+                        'Kandidat tidak sesuai dengan dusun pemilih.'
+                    );
+                }
             }
 
             $booth = null;
@@ -143,10 +252,6 @@ class VotingController extends Controller
             return $ballot;
         });
 
-        /*
-         * Simpan ID bilik sebelum session dihapus.
-         * ID ini dikirim ke halaman receipt sebagai query parameter.
-         */
         $returnBoothId = $boothId;
 
         session()->forget([

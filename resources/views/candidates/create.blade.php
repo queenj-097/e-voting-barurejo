@@ -139,6 +139,65 @@
                             >{{ old('mission') }}</textarea>
                         </div>
 
+                        <div class="mb-4">
+
+                            <label class="form-label fw-semibold">
+                                Dusun Kandidat
+                            </label>
+
+                            <p class="text-secondary small mb-3">
+                                Pilih dusun yang dapat memilih kandidat ini.
+                            </p>
+
+                            <div class="row">
+
+                                @forelse ($dusuns as $dusun)
+
+                                    <div class="col-md-6 mb-2">
+
+                                        <div class="form-check border rounded p-3">
+
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                name="dusun_ids[]"
+                                                value="{{ $dusun->id }}"
+                                                id="dusun{{ $dusun->id }}"
+                                                @checked(
+                                                    in_array(
+                                                        $dusun->id,
+                                                        old('dusun_ids', [])
+                                                    )
+                                                )
+                                            >
+
+                                            <label
+                                                class="form-check-label fw-semibold"
+                                                for="dusun{{ $dusun->id }}"
+                                            >
+                                                {{ $dusun->name }}
+                                            </label>
+
+                                        </div>
+
+                                    </div>
+
+                                @empty
+
+                                    <div class="col-12">
+
+                                        <div class="alert alert-warning mb-0">
+                                            Belum ada data dusun.
+                                        </div>
+
+                                    </div>
+
+                                @endforelse
+
+                            </div>
+
+                        </div>
+
                         <div class="d-flex justify-content-end gap-2">
                             <a
                                 href="{{ route('candidates.index') }}"

@@ -1,16 +1,18 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BallotScanController;
 use App\Http\Controllers\BoothController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DusunController;
 use App\Http\Controllers\ElectionSettingController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VotingController;
-use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\DatabaseBackupController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -21,11 +23,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('guest')->group(function () {
+
     Route::get('/login', [AuthController::class, 'showLogin'])
         ->name('login');
 
     Route::post('/login', [AuthController::class, 'login'])
         ->name('login.process');
+
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -39,14 +43,16 @@ Route::post('/logout', [AuthController::class, 'logout'])
 */
 
 Route::middleware('auth')->group(function () {
+
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     Route::get('/dashboard/live', [DashboardController::class, 'live'])
-    ->name('dashboard.live');
+        ->name('dashboard.live');
 
     Route::get('/bilik-status', [BoothController::class, 'status'])
         ->name('booths.status');
+
 });
 
 /*
@@ -55,9 +61,17 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware([
+    'auth',
+    'role:admin',
+])->group(function () {
+
     Route::resource('candidates', CandidateController::class);
+
     Route::resource('voters', VoterController::class);
+
+    Route::resource('dusuns', DusunController::class)
+        ->except(['show']);
 
     Route::get('/results', [ResultController::class, 'index'])
         ->name('results.index');
@@ -74,8 +88,30 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/settings', [ElectionSettingController::class, 'update'])
         ->name('settings.update');
 
-    Route::delete('/settings/reset-election', [ElectionSettingController::class, 'resetElection'])
-        ->name('settings.reset-election');
+    Route::get('/settings/database-backup', [DatabaseBackupController::class, 'download'])
+        ->name('settings.database-backup');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reset Sistem
+    |--------------------------------------------------------------------------
+    */
+
+    Route::delete(
+        '/settings/reset-activations',
+        [ElectionSettingController::class, 'resetActivations']
+    )->name('settings.reset-activations');
+
+    Route::delete(
+        '/settings/reset-election',
+        [ElectionSettingController::class, 'resetElection']
+    )->name('settings.reset-election');
+
+    Route::delete(
+        '/settings/reset-system',
+        [ElectionSettingController::class, 'resetSystem']
+    )->name('settings.reset-system');
+
 });
 
 /*
@@ -88,6 +124,7 @@ Route::middleware([
     'auth',
     'role:admin,verifikator',
 ])->group(function () {
+
     Route::get('/verification', [VerificationController::class, 'index'])
         ->name('verification.index');
 
@@ -108,6 +145,7 @@ Route::middleware([
         '/verification/assign-booth',
         [VerificationController::class, 'assignToBooth']
     )->name('verification.assign-booth');
+
 });
 
 /*
@@ -120,16 +158,18 @@ Route::middleware([
     'auth',
     'role:admin,scanner',
 ])->group(function () {
+
     Route::get('/scan', [BallotScanController::class, 'index'])
         ->name('scan.index');
 
     Route::post('/scan', [BallotScanController::class, 'store'])
         ->name('scan.store');
+
 });
 
 /*
 |--------------------------------------------------------------------------
-| Perangkat bilik
+| Perangkat Bilik
 |--------------------------------------------------------------------------
 */
 

@@ -4,6 +4,86 @@
 
 @section('content')
 
+<style>
+    .scan-popup {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+    }
+
+    .scan-popup-success {
+        background: rgba(25, 135, 84, 0.97);
+        color: white;
+    }
+
+    .scan-popup-duplicate {
+        background: rgba(255, 193, 7, 0.97);
+        color: #212529;
+    }
+
+    .scan-popup-error {
+        background: rgba(220, 53, 69, 0.97);
+        color: white;
+    }
+
+    .scan-popup-card {
+        width: 100%;
+        max-width: 680px;
+        padding: 48px 32px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(8px);
+        animation: scanPopupIn 0.25s ease-out;
+    }
+
+    .scan-popup-icon {
+        font-size: 92px;
+        line-height: 1;
+        margin-bottom: 24px;
+    }
+
+    .scan-popup-title {
+        font-size: clamp(32px, 6vw, 54px);
+        font-weight: 800;
+        margin-bottom: 16px;
+    }
+
+    .scan-popup-message {
+        font-size: clamp(18px, 3vw, 26px);
+        margin-bottom: 28px;
+    }
+
+    .scan-popup-countdown {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .scan-popup-countdown strong {
+        display: inline-block;
+        min-width: 28px;
+        font-size: 28px;
+    }
+
+    @keyframes scanPopupIn {
+        from {
+            opacity: 0;
+            transform: scale(0.92);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
 <div class="container-fluid">
 
     <div class="row justify-content-center">
@@ -60,53 +140,6 @@
 
             </div>
 
-            @if (session('scan_message'))
-
-                @php
-                    $scanStatus = session('scan_status');
-
-                    $alertClass = match ($scanStatus) {
-                        'success' => 'success',
-                        'duplicate' => 'warning',
-                        default => 'danger',
-                    };
-
-                    $iconClass = match ($scanStatus) {
-                        'success' => 'bi-check-circle-fill',
-                        'duplicate' => 'bi-exclamation-triangle-fill',
-                        default => 'bi-x-circle-fill',
-                    };
-                @endphp
-
-                <div
-                    class="alert alert-{{ $alertClass }} text-center py-4 shadow-sm"
-                    id="scanResult"
-                >
-                    <i class="bi {{ $iconClass }} display-4 d-block mb-2"></i>
-
-                    <h3 class="fw-bold mb-2">
-                        @if ($scanStatus === 'success')
-                            Suara Sah
-                        @elseif ($scanStatus === 'duplicate')
-                            QR Sudah Digunakan
-                        @else
-                            Scan Gagal
-                        @endif
-                    </h3>
-
-                    <div class="fs-5">
-                        {{ session('scan_message') }}
-                    </div>
-
-                    <small class="d-block mt-3">
-                        Kembali ke mode scan dalam
-                        <strong id="countdown">3</strong>
-                        detik.
-                    </small>
-                </div>
-
-            @endif
-
             @if ($errors->any())
                 <div class="alert alert-danger">
                     {{ $errors->first() }}
@@ -143,7 +176,10 @@
                         @csrf
 
                         <div class="mb-4">
-                            <label class="form-label fw-semibold">
+                            <label
+                                for="tokenInput"
+                                class="form-label fw-semibold"
+                            >
                                 Token QR
                             </label>
 
@@ -174,7 +210,7 @@
 
             <div class="alert alert-light border mt-4">
                 <strong>Cara penggunaan:</strong>
-                scanner USB biasanya bekerja seperti keyboard. Setelah QR terbaca,
+                scanner USB bekerja seperti keyboard. Setelah QR terbaca,
                 token otomatis masuk ke kolom lalu scanner mengirim tombol Enter.
             </div>
 
@@ -183,16 +219,88 @@
 
 </div>
 
+@if (session('scan_message'))
+
+    @php
+        $scanStatus = session('scan_status');
+
+        $popupClass = match ($scanStatus) {
+            'success' => 'scan-popup-success',
+            'duplicate' => 'scan-popup-duplicate',
+            default => 'scan-popup-error',
+        };
+
+        $iconClass = match ($scanStatus) {
+            'success' => 'bi-check-circle-fill',
+            'duplicate' => 'bi-exclamation-triangle-fill',
+            default => 'bi-x-circle-fill',
+        };
+
+        $popupTitle = match ($scanStatus) {
+            'success' => 'SUARA BERHASIL DIHITUNG',
+            'duplicate' => 'QR SUDAH DIGUNAKAN',
+            default => 'QR TIDAK VALID',
+        };
+    @endphp
+
+    <div
+        class="scan-popup {{ $popupClass }}"
+        id="scanPopup"
+        role="alert"
+        aria-live="assertive"
+    >
+        <div class="scan-popup-card">
+
+            <i class="bi {{ $iconClass }} scan-popup-icon"></i>
+
+            <div class="scan-popup-title">
+                {{ $popupTitle }}
+            </div>
+
+            <div class="scan-popup-message">
+                {{ session('scan_message') }}
+            </div>
+
+            <div class="scan-popup-countdown">
+                Kembali ke mode scan dalam
+                <strong id="countdown">3</strong>
+                detik
+            </div>
+
+        </div>
+    </div>
+
+@endif
+
 <script>
     const tokenInput = document.getElementById('tokenInput');
     const scanForm = document.getElementById('scanForm');
     const submitButton = document.getElementById('submitButton');
-    const scanResult = document.getElementById('scanResult');
+    const scanPopup = document.getElementById('scanPopup');
 
     function focusScannerInput() {
-        if (tokenInput) {
+        if (tokenInput && !scanPopup) {
             tokenInput.focus();
         }
+    }
+
+    function submitScanForm() {
+        if (!tokenInput || !scanForm || !submitButton) {
+            return;
+        }
+
+        const token = tokenInput.value.trim();
+
+        if (!token || submitButton.disabled) {
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2"></span>' +
+            'Memproses...';
+
+        scanForm.submit();
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -208,23 +316,11 @@
     tokenInput?.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-
-            const token = tokenInput.value.trim();
-
-            if (!token) {
-                return;
-            }
-
-            submitButton.disabled = true;
-            submitButton.innerHTML =
-                '<span class="spinner-border spinner-border-sm me-2"></span>' +
-                'Memproses...';
-
-            scanForm.submit();
+            submitScanForm();
         }
     });
 
-    if (scanResult) {
+    if (scanPopup) {
         let seconds = 3;
         const countdown = document.getElementById('countdown');
 

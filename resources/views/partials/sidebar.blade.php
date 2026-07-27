@@ -50,6 +50,14 @@
                 <span>Data DPT</span>
             </a>
 
+            <a
+                href="{{ route('dusuns.index') }}"
+                class="nav-link {{ request()->routeIs('dusuns.*') ? 'active' : '' }}"
+            >
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Data Dusun</span>
+            </a>
+
         @endif
 
         @if (in_array(auth()->user()->role, ['admin', 'verifikator'], true))
