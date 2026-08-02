@@ -229,182 +229,381 @@
 
     </div>
 
+
     {{-- Hasil sementara --}}
-    <div class="row g-4 mb-4">
+    <div
+        id="generalResultsContainer"
+        class="{{ $candidateScope === 'grouped' ? 'd-none' : '' }}"
+    >
+        <div class="row g-4 mb-4">
 
-        {{-- Pemenang sementara --}}
-        <div class="col-xl-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">
-                        <i class="bi bi-trophy-fill text-warning me-2"></i>
-                        Perolehan Tertinggi Sementara
-                    </h5>
-                </div>
+            {{-- Pemenang sementara --}}
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-trophy-fill text-warning me-2"></i>
+                            Perolehan Tertinggi Sementara
+                        </h5>
+                    </div>
 
-                <div
-                    id="temporaryWinnerCard"
-                    class="card-body p-4 text-center"
-                >
-                    @if ($temporaryWinner)
+                    <div
+                        id="temporaryWinnerCard"
+                        class="card-body p-4 text-center"
+                    >
+                        @if ($temporaryWinner)
 
-                        @if ($temporaryWinner->photo)
-                            <img
-                                src="{{ asset('storage/' . $temporaryWinner->photo) }}"
-                                alt="Foto {{ $temporaryWinner->name }}"
-                                width="130"
-                                height="130"
-                                class="rounded-circle border mb-3"
-                                style="object-fit: cover;"
-                            >
+                            @if ($temporaryWinner->photo)
+                                <img
+                                    src="{{ asset('storage/' . $temporaryWinner->photo) }}"
+                                    alt="Foto {{ $temporaryWinner->name }}"
+                                    width="130"
+                                    height="130"
+                                    class="rounded-circle border mb-3"
+                                    style="object-fit: cover;"
+                                >
+                            @else
+                                <div
+                                    class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
+                                    style="width: 130px; height: 130px;"
+                                >
+                                    <i class="bi bi-person-fill fs-1 text-secondary"></i>
+                                </div>
+                            @endif
+
+                            <div class="badge text-bg-success mb-2">
+                                Nomor Urut {{ $temporaryWinner->number }}
+                            </div>
+
+                            <h3 class="fw-bold">
+                                {{ $temporaryWinner->name }}
+                            </h3>
+
+                            <div class="display-6 fw-bold text-success">
+                                {{ $temporaryWinner->counted_votes }}
+                            </div>
+
+                            <p class="text-secondary mb-0">
+                                suara sah
+                            </p>
+
                         @else
+
                             <div
                                 class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
-                                style="width: 130px; height: 130px;"
+                                style="width: 110px; height: 110px;"
                             >
-                                <i class="bi bi-person-fill fs-1 text-secondary"></i>
+                                <i class="bi bi-hourglass fs-1 text-secondary"></i>
                             </div>
+
+                            <h5 class="fw-bold">
+                                Belum Ada Suara Dihitung
+                            </h5>
+
+                            <p class="text-secondary mb-0">
+                                Hasil sementara akan muncul setelah QR divalidasi.
+                            </p>
+
                         @endif
-
-                        <div class="badge text-bg-success mb-2">
-                            Nomor Urut {{ $temporaryWinner->number }}
-                        </div>
-
-                        <h3 class="fw-bold">
-                            {{ $temporaryWinner->name }}
-                        </h3>
-
-                        <div class="display-6 fw-bold text-success">
-                            {{ $temporaryWinner->counted_votes }}
-                        </div>
-
-                        <p class="text-secondary mb-0">
-                            suara sah
-                        </p>
-
-                    @else
-
-                        <div
-                            class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
-                            style="width: 110px; height: 110px;"
-                        >
-                            <i class="bi bi-hourglass fs-1 text-secondary"></i>
-                        </div>
-
-                        <h5 class="fw-bold">
-                            Belum Ada Suara Dihitung
-                        </h5>
-
-                        <p class="text-secondary mb-0">
-                            Hasil sementara akan muncul setelah QR divalidasi.
-                        </p>
-
-                    @endif
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Perolehan suara --}}
-        <div class="col-xl-8">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        Perolehan Suara Sementara
-                    </h5>
+            {{-- Perolehan suara --}}
+            <div class="col-xl-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            Perolehan Suara Sementara
+                        </h5>
 
-                    @if (auth()->user()->role === 'admin')
-                        <a
-                            href="{{ route('results.index') }}"
-                            class="btn btn-sm btn-outline-success"
-                        >
-                            Lihat Rekapitulasi
-                        </a>
-                    @endif
-                </div>
+                        @if (auth()->user()->role === 'admin')
+                            <a
+                                href="{{ route('results.index') }}"
+                                class="btn btn-sm btn-outline-success"
+                            >
+                                Lihat Rekapitulasi
+                            </a>
+                        @endif
+                    </div>
 
-                <div
-                    id="candidateResults"
-                    class="card-body p-4"
-                >
-                    @forelse ($candidates as $candidate)
+                    <div
+                        id="candidateResults"
+                        class="card-body p-4"
+                    >
+                        @forelse ($candidates as $candidate)
 
-                        @php
-                            $percentage = $countedBallots > 0
-                                ? round(
-                                    ($candidate->counted_votes / $countedBallots) * 100,
-                                    1
-                                )
-                                : 0;
-                        @endphp
+                            @php
+                                $percentage = $countedBallots > 0
+                                    ? round(
+                                        ($candidate->counted_votes / $countedBallots) * 100,
+                                        1
+                                    )
+                                    : 0;
+                            @endphp
 
-                        <div class="mb-4">
+                            <div class="mb-4">
 
-                            <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+                                <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
 
-                                <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-3">
 
-                                    @if ($candidate->photo)
-                                        <img
-                                            src="{{ asset('storage/' . $candidate->photo) }}"
-                                            alt="{{ $candidate->name }}"
-                                            width="48"
-                                            height="48"
-                                            class="rounded-circle border"
-                                            style="object-fit: cover;"
-                                        >
-                                    @else
-                                        <div
-                                            class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center"
-                                            style="width: 48px; height: 48px;"
-                                        >
-                                            <i class="bi bi-person-fill text-secondary"></i>
+                                        @if ($candidate->photo)
+                                            <img
+                                                src="{{ asset('storage/' . $candidate->photo) }}"
+                                                alt="{{ $candidate->name }}"
+                                                width="48"
+                                                height="48"
+                                                class="rounded-circle border"
+                                                style="object-fit: cover;"
+                                            >
+                                        @else
+                                            <div
+                                                class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center"
+                                                style="width: 48px; height: 48px;"
+                                            >
+                                                <i class="bi bi-person-fill text-secondary"></i>
+                                            </div>
+                                        @endif
+
+                                        <div>
+                                            <div class="fw-bold">
+                                                No. {{ $candidate->number }} —
+                                                {{ $candidate->name }}
+                                            </div>
+
+                                            <small class="text-secondary">
+                                                {{ $percentage }}%
+                                            </small>
                                         </div>
-                                    @endif
 
-                                    <div>
-                                        <div class="fw-bold">
-                                            No. {{ $candidate->number }} —
-                                            {{ $candidate->name }}
-                                        </div>
+                                    </div>
 
-                                        <small class="text-secondary">
-                                            {{ $percentage }}%
-                                        </small>
+                                    <div class="fw-bold">
+                                        {{ $candidate->counted_votes }} suara
                                     </div>
 
                                 </div>
 
-                                <div class="fw-bold">
-                                    {{ $candidate->counted_votes }} suara
+                                <div class="progress" style="height: 18px;">
+                                    <div
+                                        class="progress-bar bg-success"
+                                        role="progressbar"
+                                        style="width: {{ $percentage }}%;"
+                                    >
+                                        @if ($percentage >= 10)
+                                            {{ $percentage }}%
+                                        @endif
+                                    </div>
                                 </div>
 
                             </div>
 
-                            <div class="progress" style="height: 18px;">
-                                <div
-                                    class="progress-bar bg-success"
-                                    role="progressbar"
-                                    style="width: {{ $percentage }}%;"
-                                >
-                                    @if ($percentage >= 10)
-                                        {{ $percentage }}%
-                                    @endif
-                                </div>
+                        @empty
+
+                            <div class="text-center py-5 text-secondary">
+                                Belum ada kandidat.
                             </div>
 
-                        </div>
-
-                    @empty
-
-                        <div class="text-center py-5 text-secondary">
-                            Belum ada kandidat.
-                        </div>
-
-                    @endforelse
+                        @endforelse
+                    </div>
                 </div>
             </div>
-        </div>
 
+        </div>
+    </div>
+
+    {{-- Hasil sementara per kelompok --}}
+    <div
+        id="groupedResultsContainer"
+        class="{{ $candidateScope === 'grouped' ? '' : 'd-none' }}"
+    >
+        <div
+            id="groupedResultsGrid"
+            class="row g-4 mb-4 justify-content-center"
+        >
+            @forelse ($groupedResults as $group)
+                @php
+                    $isCenteredLastCard =
+                        $loop->last && $groupedResults->count() % 2 === 1;
+
+                    $winner = $group['temporary_winner'];
+                    $groupCandidates = $group['candidates'];
+                @endphp
+
+                <div
+                    class="col-12 col-xl-6 {{ $isCenteredLastCard ? 'mx-auto' : '' }}"
+                    id="election-group-card-{{ $group['id'] }}"
+                >
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        {{ $group['name'] }}
+                                    </h5>
+
+                                    <div class="text-secondary">
+                                        <i class="bi bi-geo-alt-fill text-success me-1"></i>
+                                        {{ $group['dusun_text'] }}
+                                    </div>
+                                </div>
+
+                                <div class="text-md-end">
+                                    <span class="badge text-bg-light border">
+                                        {{ $group['counted_ballots'] }} suara dihitung
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+
+                            <div class="border rounded-4 p-4 text-center mb-4 group-winner">
+                                <h6 class="text-uppercase text-secondary fw-bold mb-3">
+                                    <i class="bi bi-trophy-fill text-warning me-2"></i>
+                                    Perolehan Tertinggi Sementara
+                                </h6>
+
+                                @if ($winner)
+
+                                    @if ($winner['photo_url'])
+                                        <img
+                                            src="{{ $winner['photo_url'] }}"
+                                            alt="Foto {{ $winner['name'] }}"
+                                            width="110"
+                                            height="110"
+                                            class="rounded-circle border mb-3"
+                                            style="object-fit: cover;"
+                                        >
+                                    @else
+                                        <div
+                                            class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
+                                            style="width: 110px; height: 110px;"
+                                        >
+                                            <i class="bi bi-person-fill fs-1 text-secondary"></i>
+                                        </div>
+                                    @endif
+
+                                    <div class="badge text-bg-success mb-2">
+                                        Nomor Urut {{ $winner['number'] }}
+                                    </div>
+
+                                    <h4 class="fw-bold mb-1">
+                                        {{ $winner['name'] }}
+                                    </h4>
+
+                                    <div class="fs-2 fw-bold text-success">
+                                        {{ $winner['counted_votes'] }}
+                                    </div>
+
+                                    <div class="text-secondary">
+                                        suara sah
+                                    </div>
+
+                                @else
+
+                                    <div
+                                        class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-3"
+                                        style="width: 90px; height: 90px;"
+                                    >
+                                        <i class="bi bi-hourglass fs-1 text-secondary"></i>
+                                    </div>
+
+                                    <h6 class="fw-bold">
+                                        Belum Ada Suara Dihitung
+                                    </h6>
+
+                                    <p class="text-secondary mb-0">
+                                        Hasil akan muncul setelah QR divalidasi.
+                                    </p>
+
+                                @endif
+                            </div>
+
+                            <div>
+                                <h6 class="fw-bold mb-3">
+                                    Perolehan Suara Sementara
+                                </h6>
+
+                                <div class="group-candidate-results">
+                                    @forelse ($groupCandidates as $candidate)
+                                        <div class="mb-4">
+
+                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+
+                                                <div class="d-flex align-items-center gap-3">
+
+                                                    @if ($candidate['photo_url'])
+                                                        <img
+                                                            src="{{ $candidate['photo_url'] }}"
+                                                            alt="{{ $candidate['name'] }}"
+                                                            width="46"
+                                                            height="46"
+                                                            class="rounded-circle border"
+                                                            style="object-fit: cover;"
+                                                        >
+                                                    @else
+                                                        <div
+                                                            class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center"
+                                                            style="width: 46px; height: 46px;"
+                                                        >
+                                                            <i class="bi bi-person-fill text-secondary"></i>
+                                                        </div>
+                                                    @endif
+
+                                                    <div>
+                                                        <div class="fw-bold">
+                                                            No. {{ $candidate['number'] }} —
+                                                            {{ $candidate['name'] }}
+                                                        </div>
+
+                                                        <small class="text-secondary">
+                                                            {{ $candidate['percentage'] }}%
+                                                        </small>
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="fw-bold text-nowrap">
+                                                    {{ $candidate['counted_votes'] }} suara
+                                                </div>
+
+                                            </div>
+
+                                            <div class="progress" style="height: 18px;">
+                                                <div
+                                                    class="progress-bar bg-success"
+                                                    role="progressbar"
+                                                    style="width: {{ $candidate['percentage'] }}%;"
+                                                >
+                                                    @if ($candidate['percentage'] >= 10)
+                                                        {{ $candidate['percentage'] }}%
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    @empty
+                                        <div class="text-center py-4 text-secondary">
+                                            Belum ada kandidat dalam kelompok ini.
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="col-12">
+                    <div class="alert alert-warning text-center">
+                        Belum ada kelompok pemilihan yang tersedia.
+                    </div>
+                </div>
+            @endforelse
+        </div>
     </div>
 
     {{-- Monitor status bilik --}}
@@ -612,6 +811,7 @@
         }
     }
 
+
     function renderTemporaryWinner(winner) {
         const container = document.getElementById('temporaryWinnerCard');
 
@@ -701,70 +901,247 @@
         }
 
         container.innerHTML = candidates.map((candidate) => {
-            const photo = candidate.photo_url
-                ? `
-                    <img
-                        src="${escapeHtml(candidate.photo_url)}"
-                        alt="${escapeHtml(candidate.name)}"
-                        width="48"
-                        height="48"
-                        class="rounded-circle border"
-                        style="object-fit:cover;"
-                    >
-                `
-                : `
-                    <div
-                        class="rounded-circle bg-secondary-subtle d-flex
-                        align-items-center justify-content-center"
-                        style="width:48px;height:48px;"
-                    >
-                        <i class="bi bi-person-fill text-secondary"></i>
-                    </div>
-                `;
+            return renderCandidateResultItem(candidate);
+        }).join('');
+    }
 
-            const progressText = candidate.percentage >= 10
-                ? `${candidate.percentage}%`
-                : '';
+    function renderCandidateResultItem(candidate) {
+        const photo = candidate.photo_url
+            ? `
+                <img
+                    src="${escapeHtml(candidate.photo_url)}"
+                    alt="${escapeHtml(candidate.name)}"
+                    width="48"
+                    height="48"
+                    class="rounded-circle border"
+                    style="object-fit:cover;"
+                >
+            `
+            : `
+                <div
+                    class="rounded-circle bg-secondary-subtle d-flex
+                    align-items-center justify-content-center flex-shrink-0"
+                    style="width:48px;height:48px;"
+                >
+                    <i class="bi bi-person-fill text-secondary"></i>
+                </div>
+            `;
 
-            return `
-                <div class="mb-4">
+        const percentage = Number(candidate.percentage ?? 0);
+        const progressText = percentage >= 10
+            ? `${escapeHtml(percentage)}%`
+            : '';
 
-                    <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+        return `
+            <div class="mb-4">
 
-                        <div class="d-flex align-items-center gap-3">
-                            ${photo}
+                <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
 
-                            <div>
-                                <div class="fw-bold">
-                                    No. ${escapeHtml(candidate.number)} —
-                                    ${escapeHtml(candidate.name)}
-                                </div>
+                    <div class="d-flex align-items-center gap-3">
+                        ${photo}
 
-                                <small class="text-secondary">
-                                    ${escapeHtml(candidate.percentage)}%
-                                </small>
+                        <div>
+                            <div class="fw-bold">
+                                No. ${escapeHtml(candidate.number)} —
+                                ${escapeHtml(candidate.name)}
                             </div>
-                        </div>
 
-                        <div class="fw-bold">
-                            ${escapeHtml(candidate.counted_votes)} suara
+                            <small class="text-secondary">
+                                ${escapeHtml(percentage)}%
+                            </small>
                         </div>
-
                     </div>
 
-                    <div class="progress" style="height:18px;">
-                        <div
-                            class="progress-bar bg-success"
-                            role="progressbar"
-                            style="width:${candidate.percentage}%;"
-                        >
-                            ${progressText}
-                        </div>
+                    <div class="fw-bold text-nowrap">
+                        ${escapeHtml(candidate.counted_votes)} suara
                     </div>
 
                 </div>
+
+                <div class="progress" style="height:18px;">
+                    <div
+                        class="progress-bar bg-success"
+                        role="progressbar"
+                        style="width:${percentage}%;"
+                    >
+                        ${progressText}
+                    </div>
+                </div>
+
+            </div>
+        `;
+    }
+
+    function renderGroupedWinner(winner) {
+        if (!winner) {
+            return `
+                <h6 class="text-uppercase text-secondary fw-bold mb-3">
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>
+                    Perolehan Tertinggi Sementara
+                </h6>
+
+                <div
+                    class="rounded-circle bg-secondary-subtle d-flex
+                    align-items-center justify-content-center mx-auto mb-3"
+                    style="width:90px;height:90px;"
+                >
+                    <i class="bi bi-hourglass fs-1 text-secondary"></i>
+                </div>
+
+                <h6 class="fw-bold">
+                    Belum Ada Suara Dihitung
+                </h6>
+
+                <p class="text-secondary mb-0">
+                    Hasil akan muncul setelah QR divalidasi.
+                </p>
+            `;
+        }
+
+        const photo = winner.photo_url
+            ? `
+                <img
+                    src="${escapeHtml(winner.photo_url)}"
+                    alt="Foto ${escapeHtml(winner.name)}"
+                    width="110"
+                    height="110"
+                    class="rounded-circle border mb-3"
+                    style="object-fit:cover;"
+                >
+            `
+            : `
+                <div
+                    class="rounded-circle bg-secondary-subtle d-flex
+                    align-items-center justify-content-center mx-auto mb-3"
+                    style="width:110px;height:110px;"
+                >
+                    <i class="bi bi-person-fill fs-1 text-secondary"></i>
+                </div>
+            `;
+
+        return `
+            <h6 class="text-uppercase text-secondary fw-bold mb-3">
+                <i class="bi bi-trophy-fill text-warning me-2"></i>
+                Perolehan Tertinggi Sementara
+            </h6>
+
+            ${photo}
+
+            <div class="badge text-bg-success mb-2">
+                Nomor Urut ${escapeHtml(winner.number)}
+            </div>
+
+            <h4 class="fw-bold mb-1">
+                ${escapeHtml(winner.name)}
+            </h4>
+
+            <div class="fs-2 fw-bold text-success">
+                ${escapeHtml(winner.counted_votes)}
+            </div>
+
+            <div class="text-secondary">
+                suara sah
+            </div>
+        `;
+    }
+
+    function renderGroupedResults(groups) {
+        const grid = document.getElementById('groupedResultsGrid');
+
+        if (!grid) {
+            return;
+        }
+
+        if (!groups.length) {
+            grid.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-warning text-center">
+                        Belum ada kelompok pemilihan yang tersedia.
+                    </div>
+                </div>
+            `;
+
+            return;
+        }
+
+        const hasOddCount = groups.length % 2 === 1;
+
+        grid.innerHTML = groups.map((group, index) => {
+            const isCenteredLastCard =
+                hasOddCount && index === groups.length - 1;
+
+            const candidatesHtml = (group.candidates ?? []).length
+                ? group.candidates
+                    .map((candidate) => renderCandidateResultItem(candidate))
+                    .join('')
+                : `
+                    <div class="text-center py-4 text-secondary">
+                        Belum ada kandidat dalam kelompok ini.
+                    </div>
+                `;
+
+            return `
+                <div
+                    class="col-12 col-xl-6 ${isCenteredLastCard ? 'mx-auto' : ''}"
+                    id="election-group-card-${escapeHtml(group.id)}"
+                >
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        ${escapeHtml(group.name)}
+                                    </h5>
+
+                                    <div class="text-secondary">
+                                        <i class="bi bi-geo-alt-fill text-success me-1"></i>
+                                        ${escapeHtml(group.dusun_text)}
+                                    </div>
+                                </div>
+
+                                <div class="text-md-end">
+                                    <span class="badge text-bg-light border">
+                                        ${escapeHtml(group.counted_ballots)} suara dihitung
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+
+                            <div class="border rounded-4 p-4 text-center mb-4 group-winner">
+                                ${renderGroupedWinner(group.temporary_winner)}
+                            </div>
+
+                            <div>
+                                <h6 class="fw-bold mb-3">
+                                    Perolehan Suara Sementara
+                                </h6>
+
+                                <div class="group-candidate-results">
+                                    ${candidatesHtml}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             `;
         }).join('');
+    }
+
+    function showResultMode(candidateScope) {
+        const generalContainer =
+            document.getElementById('generalResultsContainer');
+
+        const groupedContainer =
+            document.getElementById('groupedResultsContainer');
+
+        const isGrouped = candidateScope === 'grouped';
+
+        generalContainer?.classList.toggle('d-none', isGrouped);
+        groupedContainer?.classList.toggle('d-none', !isGrouped);
     }
 
     async function refreshDashboard() {
@@ -793,8 +1170,14 @@
                 data.participation_percentage
             );
 
-            renderTemporaryWinner(data.temporary_winner);
-            renderCandidateResults(data.candidates ?? []);
+            showResultMode(data.candidate_scope);
+
+            if (data.candidate_scope === 'grouped') {
+                renderGroupedResults(data.groups ?? []);
+            } else {
+                renderTemporaryWinner(data.temporary_winner);
+                renderCandidateResults(data.candidates ?? []);
+            }
         } catch (error) {
             console.error(error);
         }

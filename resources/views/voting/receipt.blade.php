@@ -223,17 +223,15 @@
 
 <script>
     const returnUrl = @json($returnUrl);
-    let printDialogOpened = false;
 
-    function printAndReturn() {
-        printDialogOpened = true;
-        window.print();
-    }
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            window.print();
+        }, 300);
+    });
 
     window.addEventListener('afterprint', function () {
-        if (printDialogOpened) {
-            window.location.href = returnUrl;
-        }
+        window.location.href = returnUrl;
     });
 </script>
 

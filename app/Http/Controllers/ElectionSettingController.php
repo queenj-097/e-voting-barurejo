@@ -7,14 +7,21 @@ use App\Models\Ballot;
 use App\Models\Booth;
 use App\Models\Candidate;
 use App\Models\Dusun;
+use App\Models\ElectionGroup;
 use App\Models\ElectionSetting;
 use App\Models\Voter;
 use App\Models\VotingAccess;
+use App\Services\AutoElectionGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ElectionSettingController extends Controller
 {
+    public function __construct(
+        private AutoElectionGroupService $groupService
+    ) {
+    }
+
     public function edit()
     {
         $setting = ElectionSetting::firstOrCreate([]);
@@ -58,6 +65,19 @@ class ElectionSettingController extends Controller
 
         $setting->update($validated);
 
+        /*
+         * Sinkronkan kelompok pemilihan otomatis.
+         *
+         * Mode general:
+         * - election_group_id kandidat dan pemilih dikosongkan
+         * - data kelompok dihapus
+         *
+         * Mode grouped:
+         * - kelompok dibuat berdasarkan kombinasi dusun kandidat
+         * - kandidat dan pemilih dimasukkan ke kelompok yang sesuai
+         */
+        $this->groupService->sync();
+
         return redirect()
             ->route('settings.edit')
             ->with(
@@ -67,8 +87,11 @@ class ElectionSettingController extends Controller
     }
 
     /**
-     * Menghapus riwayat aktivasi dan
-     * mengembalikan seluruh bilik ke kondisi awal.
+     * Menghapus riwayat aktivasi dan mengembalikan
+     * seluruh bilik ke kondisi awal.
+     *
+     * Tidak menghapus DPT, kandidat, dusun,
+     * surat suara, atau hasil pemilihan.
      */
     public function resetActivations(Request $request)
     {
@@ -97,8 +120,9 @@ class ElectionSettingController extends Controller
     }
 
     /**
-     * Menghapus hasil pemilihan, tetapi
-     * mempertahankan DPT, kandidat, dusun, dan pengaturan.
+     * Menghapus hasil pemilihan, tetapi tetap
+     * mempertahankan DPT, kandidat, dusun,
+     * kelompok pemilihan, dan pengaturan.
      */
     public function resetElection(Request $request)
     {
@@ -125,6 +149,12 @@ class ElectionSettingController extends Controller
             'active_booth_id',
         ]);
 
+        /*
+         * Bentuk ulang kelompok agar relasi kandidat
+         * dan pemilih tetap konsisten setelah reset.
+         */
+        $this->groupService->sync();
+
         return redirect()
             ->route('settings.edit')
             ->with(
@@ -135,11 +165,13 @@ class ElectionSettingController extends Controller
 
     /**
      * Menghapus seluruh data pemilihan dan data master.
-     * Akun pengguna serta perangkat bilik tetap dipertahankan.
+     *
+     * Akun petugas dan perangkat bilik tetap dipertahankan
+     * supaya admin tetap dapat masuk ke aplikasi.
      */
     public function resetSystem(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'reset_confirmation' => [
                 'required',
                 'in:RESET SELURUH SISTEM',
@@ -153,14 +185,14 @@ class ElectionSettingController extends Controller
 
         DB::transaction(function () {
             /*
-             * Hapus data transaksi terlebih dahulu agar
-             * tidak melanggar foreign key.
+             * Hapus data transaksi terlebih dahulu
+             * agar tidak melanggar foreign key.
              */
             Ballot::query()->delete();
             VotingAccess::query()->delete();
 
             /*
-             * Lepaskan bilik dari pemilih sebelum DPT dihapus.
+             * Lepaskan seluruh bilik dari pemilih.
              */
             Booth::query()->update([
                 'status' => 'idle',
@@ -170,20 +202,36 @@ class ElectionSettingController extends Controller
             ]);
 
             /*
-             * Hapus data utama pemilihan.
+             * Kosongkan hubungan dengan kelompok terlebih dahulu.
+             */
+            Candidate::query()->update([
+                'election_group_id' => null,
+            ]);
+
+            Voter::query()->update([
+                'election_group_id' => null,
+            ]);
+
+            /*
+             * Hapus data master.
+             *
              * Relasi candidate_dusun akan ikut terhapus
              * melalui cascade pada tabel pivot.
              */
             Candidate::query()->delete();
             Voter::query()->delete();
+            ElectionGroup::query()->delete();
             Dusun::query()->delete();
 
+            /*
+             * Hapus pengaturan dan log aktivitas.
+             */
             ElectionSetting::query()->delete();
             ActivityLog::query()->delete();
 
             /*
              * Buat kembali satu pengaturan kosong agar
-             * halaman Settings tetap bisa dibuka.
+             * halaman Settings tetap dapat dibuka.
              */
             ElectionSetting::firstOrCreate([]);
         });

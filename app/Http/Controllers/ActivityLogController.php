@@ -3,36 +3,101 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ActivityLogController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Menampilkan daftar aktivitas sistem.
+     */
+    public function index(Request $request): View
     {
-        $query = ActivityLog::with('user')
+        $query = ActivityLog::query()
+            ->with('user')
             ->latest();
 
         if ($request->filled('action')) {
-            $query->where('action', $request->action);
+            $query->where(
+                'action',
+                $request->string('action')->toString()
+            );
         }
 
         if ($request->filled('keyword')) {
-            $query->where(function ($q) use ($request) {
+            $keyword = trim(
+                $request->string('keyword')->toString()
+            );
 
-                $q->where('description', 'like', "%{$request->keyword}%")
-                  ->orWhere('action', 'like', "%{$request->keyword}%");
-
+            $query->where(function ($subQuery) use ($keyword) {
+                $subQuery
+                    ->where(
+                        'description',
+                        'like',
+                        '%' . $keyword . '%'
+                    )
+                    ->orWhere(
+                        'action',
+                        'like',
+                        '%' . $keyword . '%'
+                    )
+                    ->orWhereHas(
+                        'user',
+                        function ($userQuery) use ($keyword) {
+                            $userQuery->where(
+                                'name',
+                                'like',
+                                '%' . $keyword . '%'
+                            );
+                        }
+                    );
             });
         }
 
-        $logs = $query->paginate(20)->withQueryString();
+        $logs = $query
+            ->paginate(20)
+            ->withQueryString();
 
-        $today = ActivityLog::whereDate('created_at', today())->count();
+        $today = ActivityLog::query()
+            ->whereDate('created_at', today())
+            ->count();
 
-        return view('activity-logs.index', [
-            'logs' => $logs,
-            'today' => $today,
-            'total' => ActivityLog::count(),
-        ]);
+        $total = ActivityLog::query()->count();
+
+        return view('activity-logs.index', compact(
+            'logs',
+            'today',
+            'total'
+        ));
+    }
+
+    /**
+     * Menghapus satu aktivitas.
+     */
+    public function destroy(
+        ActivityLog $activityLog
+    ): RedirectResponse {
+        $activityLog->delete();
+
+        return back()->with(
+            'success',
+            'Aktivitas berhasil dihapus.'
+        );
+    }
+
+    /**
+     * Menghapus seluruh aktivitas.
+     */
+    public function destroyAll(): RedirectResponse
+    {
+        ActivityLog::query()->delete();
+
+        return redirect()
+            ->route('activity-logs.index')
+            ->with(
+                'success',
+                'Seluruh riwayat aktivitas berhasil dihapus.'
+            );
     }
 }

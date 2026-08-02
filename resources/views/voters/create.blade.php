@@ -16,6 +16,7 @@
 
                 <p class="text-secondary mb-0">
                     Masukkan data pemilih tetap Desa Barurejo.
+                    ID DPT akan dibuat otomatis oleh sistem.
                 </p>
             </div>
 
@@ -44,64 +45,6 @@
 
                         <div class="mb-3">
                             <label
-                                for="dpt_number"
-                                class="form-label fw-semibold"
-                            >
-                                Nomor DPT
-                            </label>
-
-                            <input
-                                type="text"
-                                name="dpt_number"
-                                id="dpt_number"
-                                value="{{ old('dpt_number') }}"
-                                class="form-control @error('dpt_number') is-invalid @enderror"
-                                placeholder="Contoh: DPT-0001"
-                                autofocus
-                                required
-                            >
-
-                            @error('dpt_number')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label
-                                for="nik"
-                                class="form-label fw-semibold"
-                            >
-                                NIK
-                            </label>
-
-                            <input
-                                type="text"
-                                name="nik"
-                                id="nik"
-                                value="{{ old('nik') }}"
-                                class="form-control @error('nik') is-invalid @enderror"
-                                placeholder="Masukkan 16 digit NIK"
-                                maxlength="16"
-                                inputmode="numeric"
-                                pattern="[0-9]{16}"
-                                required
-                            >
-
-                            @error('nik')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
-                            <small class="text-secondary">
-                                Masukkan 16 digit NIK tanpa spasi atau tanda baca.
-                            </small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label
                                 for="name"
                                 class="form-label fw-semibold"
                             >
@@ -115,10 +58,51 @@
                                 value="{{ old('name') }}"
                                 class="form-control @error('name') is-invalid @enderror"
                                 placeholder="Nama lengkap pemilih"
+                                autofocus
                                 required
                             >
 
                             @error('name')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label
+                                for="gender"
+                                class="form-label fw-semibold"
+                            >
+                                Jenis Kelamin
+                            </label>
+
+                            <select
+                                name="gender"
+                                id="gender"
+                                class="form-select @error('gender') is-invalid @enderror"
+                                required
+                            >
+                                <option value="">
+                                    Pilih Jenis Kelamin
+                                </option>
+
+                                <option
+                                    value="L"
+                                    @selected(old('gender') === 'L')
+                                >
+                                    Laki-laki
+                                </option>
+
+                                <option
+                                    value="P"
+                                    @selected(old('gender') === 'P')
+                                >
+                                    Perempuan
+                                </option>
+                            </select>
+
+                            @error('gender')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
@@ -149,6 +133,9 @@
                                         @selected(old('dusun_id') == $dusun->id)
                                     >
                                         {{ $dusun->name }}
+                                        @if ($dusun->code)
+                                            ({{ $dusun->code }})
+                                        @endif
                                     </option>
                                 @endforeach
                             </select>
@@ -160,27 +147,126 @@
                             @enderror
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label
+                                    for="rw"
+                                    class="form-label fw-semibold"
+                                >
+                                    RW
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="rw"
+                                    id="rw"
+                                    value="{{ old('rw') }}"
+                                    class="form-control @error('rw') is-invalid @enderror"
+                                    placeholder="Contoh: 1"
+                                    min="1"
+                                    max="999"
+                                    inputmode="numeric"
+                                    required
+                                >
+
+                                @error('rw')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+
+                                <small class="text-secondary">
+                                    Sistem akan menyimpan RW 1 sebagai 01.
+                                </small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label
+                                    for="rt"
+                                    class="form-label fw-semibold"
+                                >
+                                    RT
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="rt"
+                                    id="rt"
+                                    value="{{ old('rt') }}"
+                                    class="form-control @error('rt') is-invalid @enderror"
+                                    placeholder="Contoh: 1"
+                                    min="1"
+                                    max="999"
+                                    inputmode="numeric"
+                                    required
+                                >
+
+                                @error('rt')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+
+                                <small class="text-secondary">
+                                    Sistem akan menyimpan RT 1 sebagai 01.
+                                </small>
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             <label
-                                for="address"
+                                for="nik"
                                 class="form-label fw-semibold"
                             >
-                                Alamat
+                                NIK
+                                <span class="text-secondary fw-normal">
+                                    (Opsional)
+                                </span>
                             </label>
 
-                            <textarea
-                                name="address"
-                                id="address"
-                                class="form-control @error('address') is-invalid @enderror"
-                                rows="4"
-                                placeholder="RT/RW, Desa Barurejo"
-                            >{{ old('address') }}</textarea>
+                            <input
+                                type="text"
+                                name="nik"
+                                id="nik"
+                                value="{{ old('nik') }}"
+                                class="form-control @error('nik') is-invalid @enderror"
+                                placeholder="Masukkan 16 digit NIK jika tersedia"
+                                maxlength="16"
+                                inputmode="numeric"
+                                pattern="[0-9]{16}"
+                            >
 
-                            @error('address')
+                            @error('nik')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
                             @enderror
+
+                            <small class="text-secondary">
+                                Kosongkan jika NIK tidak tersedia.
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-info-circle me-2 mt-1"></i>
+
+                                <div>
+                                    <strong>
+                                        ID DPT dibuat otomatis
+                                    </strong>
+
+                                    <div class="mt-1">
+                                        Format ID DPT:
+                                        <code>KODE DUSUN-RW-RT-NOMOR URUT</code>
+                                    </div>
+
+                                    <div>
+                                        Contoh:
+                                        <code>KRJ-01-01-001</code>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">

@@ -8,18 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('dusuns', function (Blueprint $table) {
-            $table->id();
-
-            $table->string('name')->unique();
-            $table->string('code', 10)->unique();
-
-            $table->timestamps();
+        Schema::table('candidates', function (Blueprint $table) {
+            $table->dropUnique('candidates_number_unique');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('dusuns');
+        Schema::table('candidates', function (Blueprint $table) {
+            $table->unique('number');
+        });
     }
 };

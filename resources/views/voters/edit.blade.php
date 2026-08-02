@@ -44,53 +44,21 @@
                         @method('PUT')
 
                         <div class="mb-3">
-                            <label
-                                for="dpt_number"
-                                class="form-label fw-semibold"
-                            >
-                                Nomor DPT
+                            <label class="form-label fw-semibold">
+                                ID DPT
                             </label>
 
                             <input
                                 type="text"
-                                name="dpt_number"
-                                id="dpt_number"
-                                value="{{ old('dpt_number', $voter->dpt_number) }}"
-                                class="form-control @error('dpt_number') is-invalid @enderror"
-                                required
+                                class="form-control"
+                                value="{{ $voter->voter_code }}"
+                                readonly
                             >
 
-                            @error('dpt_number')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label
-                                for="nik"
-                                class="form-label fw-semibold"
-                            >
-                                NIK
-                            </label>
-
-                            <input
-                                type="text"
-                                name="nik"
-                                id="nik"
-                                value="{{ old('nik', $voter->nik) }}"
-                                class="form-control @error('nik') is-invalid @enderror"
-                                maxlength="16"
-                                inputmode="numeric"
-                                required
-                            >
-
-                            @error('nik')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
+                            <small class="text-secondary">
+                                ID DPT dibuat otomatis oleh sistem.
+                                Jika Dusun, RW, atau RT diubah maka ID DPT akan diperbarui.
+                            </small>
                         </div>
 
                         <div class="mb-3">
@@ -119,6 +87,44 @@
 
                         <div class="mb-3">
                             <label
+                                for="gender"
+                                class="form-label fw-semibold"
+                            >
+                                Jenis Kelamin
+                            </label>
+
+                            <select
+                                name="gender"
+                                id="gender"
+                                class="form-select @error('gender') is-invalid @enderror"
+                                required
+                            >
+                                <option value="">Pilih Jenis Kelamin</option>
+
+                                <option
+                                    value="L"
+                                    @selected(old('gender', $voter->gender) == 'L')
+                                >
+                                    Laki-laki
+                                </option>
+
+                                <option
+                                    value="P"
+                                    @selected(old('gender', $voter->gender) == 'P')
+                                >
+                                    Perempuan
+                                </option>
+                            </select>
+
+                            @error('gender')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label
                                 for="dusun_id"
                                 class="form-label fw-semibold"
                             >
@@ -138,11 +144,12 @@
                                 @foreach ($dusuns as $dusun)
                                     <option
                                         value="{{ $dusun->id }}"
-                                        @selected(
-                                            old('dusun_id', $voter->dusun_id) == $dusun->id
-                                        )
+                                        @selected(old('dusun_id', $voter->dusun_id) == $dusun->id)
                                     >
                                         {{ $dusun->name }}
+                                        @if($dusun->code)
+                                            ({{ $dusun->code }})
+                                        @endif
                                     </option>
                                 @endforeach
                             </select>
@@ -154,26 +161,94 @@
                             @enderror
                         </div>
 
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label
+                                    for="rw"
+                                    class="form-label fw-semibold"
+                                >
+                                    RW
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="rw"
+                                    id="rw"
+                                    value="{{ old('rw', (int) $voter->rw) }}"
+                                    class="form-control @error('rw') is-invalid @enderror"
+                                    min="1"
+                                    max="999"
+                                    required
+                                >
+
+                                @error('rw')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label
+                                    for="rt"
+                                    class="form-label fw-semibold"
+                                >
+                                    RT
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="rt"
+                                    id="rt"
+                                    value="{{ old('rt', (int) $voter->rt) }}"
+                                    class="form-control @error('rt') is-invalid @enderror"
+                                    min="1"
+                                    max="999"
+                                    required
+                                >
+
+                                @error('rt')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                        </div>
+
                         <div class="mb-4">
                             <label
-                                for="address"
+                                for="nik"
                                 class="form-label fw-semibold"
                             >
-                                Alamat
+                                NIK
+                                <span class="text-secondary fw-normal">
+                                    (Opsional)
+                                </span>
                             </label>
 
-                            <textarea
-                                name="address"
-                                id="address"
-                                class="form-control @error('address') is-invalid @enderror"
-                                rows="4"
-                            >{{ old('address', $voter->address) }}</textarea>
+                            <input
+                                type="text"
+                                name="nik"
+                                id="nik"
+                                value="{{ old('nik', $voter->nik) }}"
+                                class="form-control @error('nik') is-invalid @enderror"
+                                maxlength="16"
+                                inputmode="numeric"
+                                pattern="[0-9]{16}"
+                                placeholder="Masukkan 16 digit NIK jika tersedia"
+                            >
 
-                            @error('address')
+                            @error('nik')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
                             @enderror
+
+                            <small class="text-secondary">
+                                Kosongkan jika NIK tidak tersedia.
+                            </small>
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
@@ -182,6 +257,7 @@
                                 href="{{ route('voters.index') }}"
                                 class="btn btn-light border"
                             >
+                                <i class="bi bi-arrow-left me-1"></i>
                                 Batal
                             </a>
 
@@ -194,6 +270,7 @@
                             </button>
 
                         </div>
+
                     </form>
 
                 </div>

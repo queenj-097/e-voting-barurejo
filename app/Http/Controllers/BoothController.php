@@ -3,14 +3,54 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booth;
-use Illuminate\Http\Request;
 use App\Models\ElectionSetting;
 
 class BoothController extends Controller
 {
     public function show(Booth $booth)
     {
-        $booth->load('currentVoter');
+        $setting = ElectionSetting::first();
+
+        if (!$setting || $setting->status !== 'berlangsung') {
+            return view('booths.show', compact('booth'))
+                ->with(
+                    'error',
+                    'Pemungutan suara belum dibuka atau sudah selesai.'
+                );
+        }
+
+        $booth->load([
+            'currentVoter.dusun',
+        ]);
+
+        if (
+            $booth->status === 'assigned'
+            && $booth->current_voter_id
+        ) {
+            $booth->update([
+                'status' => 'voting',
+                'voting_started_at' => now(),
+            ]);
+
+            session([
+                'active_booth_id' => $booth->id,
+                'verified_voter_id' => $booth->current_voter_id,
+            ]);
+
+            return redirect()->route('voting.index');
+        }
+
+        if (
+            $booth->status === 'voting'
+            && $booth->current_voter_id
+        ) {
+            session([
+                'active_booth_id' => $booth->id,
+                'verified_voter_id' => $booth->current_voter_id,
+            ]);
+
+            return redirect()->route('voting.index');
+        }
 
         return view('booths.show', compact('booth'));
     }
@@ -56,7 +96,7 @@ class BoothController extends Controller
     public function status()
     {
         $booths = Booth::query()
-            ->with('currentVoter')
+            ->with('currentVoter.dusun')
             ->orderBy('id')
             ->get()
             ->map(function (Booth $booth) {
@@ -65,7 +105,10 @@ class BoothController extends Controller
                     'name' => $booth->name,
                     'status' => $booth->status,
                     'voter_name' => $booth->currentVoter?->name,
-                    'dpt_number' => $booth->currentVoter?->dpt_number,
+                    'voter_code' => $booth->currentVoter?->voter_code,
+                    'dusun' => $booth->currentVoter?->dusun?->name,
+                    'rw' => $booth->currentVoter?->rw,
+                    'rt' => $booth->currentVoter?->rt,
                 ];
             });
 

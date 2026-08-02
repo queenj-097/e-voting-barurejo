@@ -31,8 +31,13 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
-                    <p class="text-secondary mb-2">Total Surat Suara</p>
-                    <h2 class="fw-bold mb-0">{{ $totalBallots }}</h2>
+                    <p class="text-secondary mb-2">
+                        Total Surat Suara
+                    </p>
+
+                    <h2 class="fw-bold mb-0">
+                        {{ $totalBallots }}
+                    </h2>
                 </div>
             </div>
         </div>
@@ -40,7 +45,10 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
-                    <p class="text-secondary mb-2">Sudah Dihitung</p>
+                    <p class="text-secondary mb-2">
+                        Sudah Dihitung
+                    </p>
+
                     <h2 class="fw-bold text-success mb-0">
                         {{ $countedBallots }}
                     </h2>
@@ -51,7 +59,10 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
-                    <p class="text-secondary mb-2">Belum Dihitung</p>
+                    <p class="text-secondary mb-2">
+                        Belum Dihitung
+                    </p>
+
                     <h2 class="fw-bold text-warning mb-0">
                         {{ $uncountedBallots }}
                     </h2>
@@ -62,51 +73,111 @@
     </div>
 
     <div class="card border-0 shadow-sm">
+
         <div class="card-header bg-white py-3">
-            <h5 class="mb-0">Perolehan Suara Kandidat</h5>
+            <h5 class="mb-0">
+                Perolehan Suara Kandidat per Dusun
+            </h5>
         </div>
 
         <div class="card-body">
 
-            @forelse ($candidates as $candidate)
+            @forelse ($candidatesByDusun as $dusunName => $dusunData)
 
-                @php
-                    $percentage = $countedBallots > 0
-                        ? round(($candidate->counted_votes / $countedBallots) * 100, 1)
-                        : 0;
-                @endphp
+                <div class="border rounded-4 p-4 mb-4">
 
-                <div class="mb-4">
-
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div
+                        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+                    >
                         <div>
-                            <strong>
-                                No. {{ $candidate->number }} — {{ $candidate->name }}
-                            </strong>
-                        </div>
+                            <h4 class="fw-bold mb-1">
+                                Dusun {{ $dusunName }}
+                            </h4>
 
-                        <div>
-                            <strong>{{ $candidate->counted_votes }}</strong>
-                            suara
+                            <div class="text-secondary">
+                                Total suara sah:
+                                <strong>
+                                    {{ $dusunData['total_votes'] }}
+                                </strong>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="progress" style="height: 24px;">
-                        <div
-                            class="progress-bar bg-success"
-                            role="progressbar"
-                            style="width: {{ $percentage }}%;"
-                        >
-                            {{ $percentage }}%
+                    @forelse ($dusunData['candidates'] as $candidate)
+
+                        <div class="mb-4">
+
+                            <div
+                                class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-2 gap-2"
+                            >
+                                <div>
+                                    <strong>
+                                        No. {{ $candidate->number }}
+                                        —
+                                        {{ $candidate->name }}
+                                    </strong>
+                                </div>
+
+                                <div class="text-md-end">
+                                    <strong>
+                                        {{ $candidate->counted_votes }}
+                                    </strong>
+                                    suara
+
+                                    <span class="text-secondary ms-1">
+                                        ({{ number_format(
+                                            $candidate->percentage,
+                                            2,
+                                            ',',
+                                            '.'
+                                        ) }}%)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div
+                                class="progress"
+                                style="height: 24px;"
+                            >
+                                <div
+                                    class="progress-bar bg-success"
+                                    role="progressbar"
+                                    style="width: {{ min(
+                                        max($candidate->percentage, 0),
+                                        100
+                                    ) }}%;"
+                                    aria-valuenow="{{ $candidate->percentage }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                >
+                                    {{ number_format(
+                                        $candidate->percentage,
+                                        2,
+                                        ',',
+                                        '.'
+                                    ) }}%
+                                </div>
+                            </div>
+
                         </div>
-                    </div>
+
+                    @empty
+
+                        <div class="text-center text-secondary py-3">
+                            Belum ada kandidat pada dusun ini.
+                        </div>
+
+                    @endforelse
 
                 </div>
 
             @empty
-                <p class="text-center text-secondary mb-0">
+
+                <div class="text-center text-secondary py-5">
+                    <i class="bi bi-bar-chart fs-1 d-block mb-2"></i>
                     Belum ada kandidat.
-                </p>
+                </div>
+
             @endforelse
 
         </div>

@@ -37,7 +37,7 @@
                             </h2>
 
                             <p class="text-secondary mb-0">
-                                Nomor DPT: {{ $voter->dpt_number }}
+                                ID DPT: {{ $voter->voter_code }}
                             </p>
                         </div>
 
@@ -49,11 +49,37 @@
 
                         <div class="col-md-6">
                             <small class="text-secondary d-block mb-1">
-                                Nomor DPT
+                                ID DPT
                             </small>
 
                             <div class="fw-semibold">
-                                {{ $voter->dpt_number }}
+                                {{ $voter->voter_code }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block mb-1">
+                                Nama Lengkap
+                            </small>
+
+                            <div class="fw-semibold">
+                                {{ $voter->name }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block mb-1">
+                                Jenis Kelamin
+                            </small>
+
+                            <div class="fw-semibold">
+                                @if ($voter->gender === 'L')
+                                    Laki-laki
+                                @elseif ($voter->gender === 'P')
+                                    Perempuan
+                                @else
+                                    -
+                                @endif
                             </div>
                         </div>
 
@@ -63,17 +89,45 @@
                             </small>
 
                             <div class="fw-semibold">
-                                {{ $voter->nik }}
+                                {{ $voter->nik ?: '-' }}
                             </div>
                         </div>
 
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <small class="text-secondary d-block mb-1">
-                                Alamat
+                                Dusun
                             </small>
 
                             <div class="fw-semibold">
-                                {{ $voter->address ?: '-' }}
+                                {{ $voter->dusun?->name ?: '-' }}
+
+                                @if ($voter->dusun?->code)
+                                    <span class="text-secondary">
+                                        ({{ $voter->dusun->code }})
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block mb-1">
+                                RT/RW
+                            </small>
+
+                            <div class="fw-semibold">
+                                RT {{ $voter->rt ?: '-' }}
+                                /
+                                RW {{ $voter->rw ?: '-' }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block mb-1">
+                                Kelompok Pemilihan
+                            </small>
+
+                            <div class="fw-semibold">
+                                {{ $voter->electionGroup?->name ?: '-' }}
                             </div>
                         </div>
 
@@ -105,6 +159,18 @@
                             </div>
                         </div>
 
+                        <div class="col-md-6">
+                            <small class="text-secondary d-block mb-1">
+                                Data Dibuat
+                            </small>
+
+                            <div class="fw-semibold">
+                                {{ $voter->created_at
+                                    ? $voter->created_at->format('d-m-Y H:i')
+                                    : '-' }}
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-5">
@@ -117,13 +183,15 @@
                             Kembali
                         </a>
 
-                        <a
-                            href="{{ route('voters.edit', $voter) }}"
-                            class="btn btn-warning"
-                        >
-                            <i class="bi bi-pencil-square me-1"></i>
-                            Edit Data
-                        </a>
+                        @unless ($voter->has_voted)
+                            <a
+                                href="{{ route('voters.edit', $voter) }}"
+                                class="btn btn-warning"
+                            >
+                                <i class="bi bi-pencil-square me-1"></i>
+                                Edit Data
+                            </a>
+                        @endunless
 
                     </div>
 

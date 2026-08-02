@@ -12,6 +12,7 @@ use App\Http\Controllers\ResultController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VotingController;
+use App\Http\Controllers\VoterImportController;
 use App\Http\Controllers\DatabaseBackupController;
 
 use Illuminate\Support\Facades\Route;
@@ -68,6 +69,24 @@ Route::middleware([
 
     Route::resource('candidates', CandidateController::class);
 
+    Route::get('/voters/import', [VoterImportController::class, 'create'])
+        ->name('voters.import');
+
+    Route::post('/voters/import', [VoterImportController::class, 'store'])
+        ->name('voters.import.store');
+
+    Route::get('/voters/qr/print-all', [VoterController::class, 'printAllQr'])
+        ->name('voters.qr.print-all');
+
+    Route::get('/voters/{voter}/qr', [VoterController::class, 'qr'])
+        ->name('voters.qr');
+
+    Route::get('/voters/{voter}/qr-image', [VoterController::class, 'qrImage'])
+        ->name('voters.qr.image');
+
+    Route::delete('/voters/destroy-all', [VoterController::class, 'destroyAll'])
+        ->name('voters.destroyAll');
+
     Route::resource('voters', VoterController::class);
 
     Route::resource('dusuns', DusunController::class)
@@ -79,8 +98,20 @@ Route::middleware([
     Route::get('/results/pdf', [ResultController::class, 'exportPdf'])
         ->name('results.pdf');
 
+    Route::get('/results/live-count', [ResultController::class, 'liveCount'])
+        ->name('results.live-count');
+
+    Route::get('/results/live-count/data', [ResultController::class, 'liveCountData'])
+        ->name('results.live-count.data');
+
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('activity-logs.index');
+
+    Route::delete('/activity-logs/destroy-all', [ActivityLogController::class, 'destroyAll'])
+        ->name('activity-logs.destroy-all');
+
+    Route::delete('/activity-logs/{activityLog}', [ActivityLogController::class, 'destroy'])
+        ->name('activity-logs.destroy');
 
     Route::get('/settings', [ElectionSettingController::class, 'edit'])
         ->name('settings.edit');
@@ -146,6 +177,10 @@ Route::middleware([
         [VerificationController::class, 'assignToBooth']
     )->name('verification.assign-booth');
 
+    Route::post(
+        '/verification/assign',
+        [VerificationController::class, 'assignToBooth']
+    )->name('verification.assign');
 });
 
 /*
@@ -165,6 +200,9 @@ Route::middleware([
     Route::post('/scan', [BallotScanController::class, 'store'])
         ->name('scan.store');
 
+    Route::get(
+    '/scan/ballots/{ballot}/reprint', [BallotScanController::class, 'reprint'])
+        ->name('scan.ballots.reprint');
 });
 
 /*

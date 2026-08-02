@@ -10,17 +10,33 @@ class DusunSeeder extends Seeder
     public function run(): void
     {
         $dusuns = [
-            'Krajan',
-            'Senepo Lor',
-            'Seneposari',
-            'Sumbermanggis',
-            'Sumberurip',
+            [
+                'name' => 'KRAJAN',
+                'code' => 'KRJ',
+            ],
+            [
+                'name' => 'SENEPOLOR',
+                'code' => 'SPL',
+            ],
+            [
+                'name' => 'SENEPOSARI',
+                'code' => 'SPS',
+            ],
+            [
+                'name' => 'SUMBERURIP',
+                'code' => 'SUR',
+            ],
+            [
+                'name' => 'SUMBERMANGGIS',
+                'code' => 'SMG',
+            ],
         ];
 
         foreach ($dusuns as $dusun) {
-            Dusun::firstOrCreate([
-                'name' => $dusun,
-            ]);
+            Dusun::updateOrCreate(
+                ['code' => $dusun['code']],
+                $dusun
+            );
         }
     }
 }

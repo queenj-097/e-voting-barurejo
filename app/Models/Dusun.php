@@ -10,6 +10,7 @@ class Dusun extends Model
 {
     protected $fillable = [
         'name',
+        'code',
     ];
 
     public function voters(): HasMany
@@ -19,9 +20,6 @@ class Dusun extends Model
 
     public function candidates(): BelongsToMany
     {
-        return $this->belongsToMany(
-            Candidate::class,
-            'candidate_dusun'
-        );
+        return $this->belongsToMany(Candidate::class);
     }
 }

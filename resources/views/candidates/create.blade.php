@@ -111,7 +111,7 @@
                             >
 
                             <small class="text-secondary">
-                                Format JPG, JPEG, atau PNG. Maksimal 2 MB.
+                                Format JPG, JPEG, atau PNG. Maksimal 10 MB.
                             </small>
                         </div>
 

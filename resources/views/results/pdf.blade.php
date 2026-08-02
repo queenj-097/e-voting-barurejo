@@ -66,12 +66,15 @@
             background: #eeeeee;
         }
 
-        .text-center {
-            text-align: center;
+        .dusun-row td {
+            background: #dddddd;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 9px;
         }
 
-        .text-right {
-            text-align: right;
+        .text-center {
+            text-align: center;
         }
 
         .signature {
@@ -153,7 +156,7 @@
         </tr>
     </table>
 
-    <h3>Perolehan Suara Kandidat</h3>
+    <h3>Perolehan Suara Kandidat per Dusun</h3>
 
     <table class="results">
         <thead>
@@ -177,34 +180,39 @@
         </thead>
 
         <tbody>
-            @forelse ($candidates as $candidate)
+            @forelse ($candidatesByDusun as $dusun => $dusunData)
 
-                @php
-                    $percentage = $countedBallots > 0
-                        ? round(
-                            ($candidate->counted_votes / $countedBallots) * 100,
-                            1
-                        )
-                        : 0;
-                @endphp
-
-                <tr>
-                    <td class="text-center">
-                        {{ $candidate->number }}
-                    </td>
-
-                    <td>
-                        {{ $candidate->name }}
-                    </td>
-
-                    <td class="text-center">
-                        {{ $candidate->counted_votes }}
-                    </td>
-
-                    <td class="text-center">
-                        {{ $percentage }}%
+                <tr class="dusun-row">
+                    <td colspan="4">
+                        Dusun {{ $dusun }}
+                        — Total Suara Sah: {{ $dusunData['total_votes'] }}
                     </td>
                 </tr>
+
+                @foreach ($dusunData['candidates'] as $candidate)
+                    <tr>
+                        <td class="text-center">
+                            {{ $candidate->number }}
+                        </td>
+
+                        <td>
+                            {{ $candidate->name }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ $candidate->counted_votes }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ number_format(
+                                $candidate->percentage,
+                                2,
+                                ',',
+                                '.'
+                            ) }}%
+                        </td>
+                    </tr>
+                @endforeach
 
             @empty
 

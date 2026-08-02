@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Dusun;
 
 class Voter extends Model
 {
     protected $fillable = [
-        'dpt_number',
+        'voter_code',
         'nik',
         'name',
+        'gender',
         'dusun_id',
-        'address',
+        'rw',
+        'rt',
         'election_group_id',
         'has_voted',
         'voted_at',
@@ -28,6 +29,11 @@ class Voter extends Model
         ];
     }
 
+    public function dusun(): BelongsTo
+    {
+        return $this->belongsTo(Dusun::class);
+    }
+
     public function electionGroup(): BelongsTo
     {
         return $this->belongsTo(ElectionGroup::class);
@@ -36,10 +42,5 @@ class Voter extends Model
     public function votingAccesses(): HasMany
     {
         return $this->hasMany(VotingAccess::class);
-    }
-
-    public function dusun()
-    {
-        return $this->belongsTo(Dusun::class);
     }
 }
