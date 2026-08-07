@@ -21,70 +21,101 @@
     >
 
     <style>
+        html,
+        body {
+            min-height: 100%;
+        }
+
         body {
             min-height: 100vh;
+            margin: 0;
             background: #f3f7f5;
             color: #203029;
         }
 
         .voting-header {
-            background: linear-gradient(135deg, #0f5137, #198754);
+            background: linear-gradient(
+                135deg,
+                #0f5137,
+                #198754
+            );
             color: white;
-            padding: 24px;
+            padding: 20px 24px;
         }
 
         .official-logo {
-            width: 72px;
-            height: 72px;
+            width: 68px;
+            height: 68px;
             object-fit: contain;
             background: white;
             border-radius: 16px;
             padding: 6px;
         }
 
+        .voting-main {
+            padding-top: 32px;
+            padding-bottom: 32px;
+        }
+
+        .candidate-button {
+            display: block;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            border: 0;
+            border-radius: 22px;
+            background: transparent;
+            color: inherit;
+            text-align: inherit;
+        }
+
         .candidate-card {
             position: relative;
+            height: 100%;
+            overflow: hidden;
             border: 3px solid transparent;
             border-radius: 22px;
+            background: white;
             cursor: pointer;
-            transition: 0.2s ease;
-            overflow: hidden;
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
         }
 
-        .candidate-card:hover {
+        .candidate-button:hover .candidate-card,
+        .candidate-button:focus-visible .candidate-card {
             transform: translateY(-4px);
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.10);
-        }
-
-        .candidate-radio:checked + .candidate-card {
             border-color: #198754;
-            box-shadow: 0 0 0 5px rgba(25, 135, 84, 0.14);
-            transform: translateY(-4px);
+            box-shadow:
+                0 0 0 5px rgba(25, 135, 84, 0.12),
+                0 14px 35px rgba(0, 0, 0, 0.10);
         }
 
-        .candidate-photo {
-            width: 190px;
-            height: 190px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 5px solid #e7eee9;
+        .candidate-button:focus {
+            outline: none;
         }
 
         .candidate-number {
             position: absolute;
             top: 18px;
             right: 18px;
+            z-index: 2;
+
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+
             min-width: 82px;
             min-height: 82px;
             padding: 10px;
+
             border-radius: 18px;
             background: #198754;
             color: white;
-            box-shadow: 0 8px 22px rgba(25, 135, 84, 0.28);
+            box-shadow:
+                0 8px 22px rgba(25, 135, 84, 0.28);
         }
 
         .candidate-number small {
@@ -99,55 +130,60 @@
             line-height: 1;
         }
 
-        .candidate-info {
-            text-align: left;
+        .candidate-photo {
+            width: 190px;
+            height: 190px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #e7eee9;
         }
 
-        .candidate-info-title {
-            font-size: 13px;
+        .candidate-photo-placeholder {
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            border: 5px solid #e7eee9;
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .candidate-name {
+            font-size: 28px;
             font-weight: 800;
-            color: #198754;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            line-height: 1.2;
         }
 
-        .candidate-info-content {
-            color: #5e6d65;
-            white-space: pre-line;
-            margin-bottom: 0;
+        .candidate-instruction {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            width: 100%;
+            min-height: 54px;
+            margin-top: 18px;
+            padding: 10px 16px;
+
+            border: 2px solid #198754;
+            border-radius: 12px;
+            color: #146c43;
+            font-size: 17px;
+            font-weight: 700;
         }
 
-        .mission-box {
-            max-height: 145px;
-            overflow-y: auto;
-            padding-right: 6px;
-        }
-
-        .candidate-radio:checked + .candidate-card .select-button {
+        .candidate-button:hover .candidate-instruction,
+        .candidate-button:focus-visible .candidate-instruction {
             background: #198754;
             color: white;
-            border-color: #198754;
-        }
-
-        .candidate-radio:checked + .candidate-card .select-button::before {
-            content: "✓ ";
-        }
-
-        .submit-choice {
-            opacity: 0.55;
-            pointer-events: none;
-            transition: 0.2s;
-        }
-
-        .submit-choice.active {
-            opacity: 1;
-            pointer-events: auto;
         }
 
         /*
-         * Konfirmasi pilihan satu layar.
+         * Konfirmasi pilihan fullscreen.
          */
+        .confirmation-modal .modal-dialog {
+            margin: 0;
+        }
+
         .confirmation-modal .modal-content {
             min-height: 100vh;
             border: 0;
@@ -156,136 +192,210 @@
         }
 
         .confirmation-header {
-            background: linear-gradient(135deg, #0f5137, #198754);
+            flex: 0 0 auto;
+            background: linear-gradient(
+                135deg,
+                #0f5137,
+                #198754
+            );
             color: white;
-            padding: 22px;
+            padding: 18px 24px;
         }
 
         .confirmation-body {
             display: flex;
             flex: 1;
-            padding: 0;
+            min-height: 0;
         }
 
         .confirmation-card {
-            width: 100%;
-            height: 100%;
-            max-width: none;
-            background: white;
-            border-radius: 0;
-            padding: 40px 60px;
-            box-shadow: none;
-            text-align: center;
-
             display: flex;
             flex-direction: column;
             justify-content: center;
+
+            width: 100%;
+            min-height: 100%;
+            padding: 28px 48px;
+
+            background: white;
+            text-align: center;
         }
 
         .confirmation-icon {
-            width: 92px;
-            height: 92px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+
+            width: 74px;
+            height: 74px;
+            margin: 0 auto 14px;
+
             border-radius: 50%;
             background: #fff3cd;
             color: #856404;
-            font-size: 42px;
+            font-size: 34px;
+        }
+
+        .confirmation-photo,
+        .confirmation-photo-placeholder {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 14px;
+            border-radius: 24px;
+            border: 7px solid #e7eee9;
         }
 
         .confirmation-photo {
-            width: 320px;
-            height: 320px;
             object-fit: cover;
-            border-radius: 28px;
-            border: 8px solid #e7eee9;
-            margin-bottom: 24px;
-        }   
+        }
 
         .confirmation-photo-placeholder {
-            width: 320px;
-            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e9ecef;
+            color: #6c757d;
+            font-size: 24px;
+        }
+
+        .confirmation-number-label {
+            color: #6c757d;
+            font-size: 14px;
         }
 
         .confirmation-number {
-            font-size: 90px;
-            font-weight: 800;
-        }
-
-        .confirmation-number {
-            font-size: 64px;
+            margin-bottom: 10px;
+            color: #198754;
+            font-size: 56px;
             font-weight: 800;
             line-height: 1;
-            color: #198754;
-            margin-bottom: 14px;
         }
 
         .confirmation-name {
-            font-size: 48px;
+            margin-bottom: 18px;
+            font-size: 38px;
             font-weight: 800;
+            line-height: 1.15;
         }
 
         .confirmation-warning {
-            max-width: 620px;
-            margin: 0 auto 28px;
-            font-size: 20px;
-            line-height: 1.5;
+            max-width: 650px;
+            margin: 0 auto 20px;
+            font-size: 17px;
+            line-height: 1.45;
         }
 
         .confirmation-actions {
             display: grid;
             grid-template-columns: 1fr 1.4fr;
-            gap: 16px;
+            gap: 14px;
+            width: 100%;
         }
 
         .confirmation-actions .btn {
-            min-height: 90px;
-            font-size: 28px;
+            min-height: 72px;
+            font-size: 23px;
             font-weight: 700;
         }
 
+        .confirmation-actions form {
+            display: flex;
+            margin: 0;
+        }
+
+        .confirmation-actions form .btn {
+            width: 100%;
+        }
+
+        @media (max-width: 991.98px) {
+            .candidate-photo,
+            .candidate-photo-placeholder {
+                width: 170px;
+                height: 170px;
+            }
+
+            .candidate-name {
+                font-size: 24px;
+            }
+        }
+
         @media (max-width: 576px) {
-            .candidate-photo {
-                width: 160px;
-                height: 160px;
+            .voting-header {
+                padding: 14px;
+            }
+
+            .official-logo {
+                width: 56px;
+                height: 56px;
+            }
+
+            .voting-main {
+                padding-top: 22px;
+                padding-bottom: 22px;
+            }
+
+            .candidate-photo,
+            .candidate-photo-placeholder {
+                width: 150px;
+                height: 150px;
             }
 
             .candidate-number {
-                min-width: 72px;
-                min-height: 72px;
+                min-width: 68px;
+                min-height: 68px;
             }
 
             .candidate-number strong {
-                font-size: 28px;
+                font-size: 27px;
+            }
+
+            .candidate-name {
+                font-size: 22px;
+            }
+
+            .confirmation-header {
+                padding: 12px;
             }
 
             .confirmation-card {
-                padding: 24px 18px;
-                border-radius: 22px;
+                justify-content: flex-start;
+                padding: 18px 14px;
+                overflow-y: auto;
+            }
+
+            .confirmation-icon {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 10px;
+                font-size: 28px;
             }
 
             .confirmation-photo,
             .confirmation-photo-placeholder {
-                width: 190px;
-                height: 190px;
+                width: 170px;
+                height: 170px;
+                margin-bottom: 10px;
             }
 
             .confirmation-number {
-                font-size: 54px;
+                font-size: 44px;
             }
 
             .confirmation-name {
-                font-size: 27px;
+                font-size: 25px;
             }
 
             .confirmation-warning {
-                font-size: 18px;
+                font-size: 15px;
             }
 
             .confirmation-actions {
                 grid-template-columns: 1fr;
+            }
+
+            .confirmation-actions .btn {
+                min-height: 58px;
+                font-size: 18px;
             }
         }
     </style>
@@ -323,61 +433,51 @@
     </div>
 </header>
 
-<main class="container py-5">
+<main class="container voting-main">
 
-    <div class="text-center mb-5">
+    <div class="text-center mb-4">
 
         <h2 class="fw-bold">
             Silakan Pilih Kandidat
         </h2>
 
         <p class="text-secondary mb-1">
-            Tekan salah satu kandidat, lalu periksa kembali pilihan Anda.
+            Tekan foto atau kartu kandidat yang Anda pilih.
         </p>
 
         <small class="text-secondary">
-            Pemilih terverifikasi: {{ $voter->name }}
+            Pemilih terverifikasi:
+            <strong>{{ $voter->name }}</strong>
         </small>
 
     </div>
 
     @if ($errors->any())
         <div class="alert alert-danger text-center">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
             {{ $errors->first() }}
         </div>
     @endif
 
-    <form
-        id="votingForm"
-        action="{{ route('voting.store') }}"
-        method="POST"
-    >
-        @csrf
+    <div class="row g-4 justify-content-center">
 
-        <div class="row g-4 justify-content-center">
+        @forelse ($candidates as $candidate)
 
-            @forelse ($candidates as $candidate)
+            <div class="col-md-6 col-xl-4">
 
-                <div class="col-md-6 col-xl-4">
+                <button
+                    type="button"
+                    class="candidate-button"
+                    data-candidate-id="{{ $candidate->id }}"
+                    data-candidate-number="{{ $candidate->number }}"
+                    data-candidate-name="{{ $candidate->name }}"
+                    data-candidate-photo="{{ $candidate->photo
+                        ? asset('storage/' . $candidate->photo)
+                        : '' }}"
+                    aria-label="Pilih kandidat nomor {{ $candidate->number }}, {{ $candidate->name }}"
+                >
+                    <div class="candidate-card card border-0 shadow-sm">
 
-                    <input
-                        type="radio"
-                        name="candidate_id"
-                        value="{{ $candidate->id }}"
-                        id="candidate-{{ $candidate->id }}"
-                        class="candidate-radio d-none"
-                        data-number="{{ $candidate->number }}"
-                        data-name="{{ $candidate->name }}"
-                        data-photo="{{ $candidate->photo
-                            ? asset('storage/' . $candidate->photo)
-                            : '' }}"
-                        required
-                    >
-
-                    <label
-                        for="candidate-{{ $candidate->id }}"
-                        class="candidate-card card border-0 shadow-sm h-100"
-                    >
                         <div class="card-body p-4">
 
                             <div class="candidate-number">
@@ -398,61 +498,41 @@
                                     >
                                 @else
                                     <div
-                                        class="candidate-photo bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-4 text-secondary"
+                                        class="candidate-photo-placeholder d-flex align-items-center justify-content-center mx-auto mb-4"
                                     >
-                                        Belum ada foto
+                                        <i class="bi bi-person-fill fs-1"></i>
                                     </div>
                                 @endif
 
-                                <h3 class="fw-bold mb-4">
+                                <h3 class="candidate-name mb-0">
                                     {{ $candidate->name }}
                                 </h3>
 
-                            </div>
+                                <div class="candidate-instruction">
+                                    <i class="bi bi-hand-index-thumb"></i>
+                                    Tekan untuk Memilih
+                                </div>
 
-                            <div
-                                class="btn btn-outline-success w-100 select-button"
-                            >
-                                Pilih Kandidat Ini
                             </div>
 
                         </div>
-                    </label>
 
-                </div>
-
-            @empty
-
-                <div class="col-12">
-
-                    <div class="alert alert-warning text-center">
-                        Belum ada kandidat yang tersedia.
                     </div>
-
-                </div>
-
-            @endforelse
-
-        </div>
-
-        @if ($candidates->isNotEmpty())
-
-            <div class="text-center mt-5">
-
-                <button
-                    type="button"
-                    id="openConfirmationButton"
-                    class="btn btn-success btn-lg px-5 py-3 fw-bold submit-choice"
-                >
-                    <i class="bi bi-check-circle me-2"></i>
-                    Pilih Kandidat Terlebih Dahulu
                 </button>
 
             </div>
 
-        @endif
+        @empty
 
-    </form>
+            <div class="col-12">
+                <div class="alert alert-warning text-center">
+                    Belum ada kandidat yang tersedia.
+                </div>
+            </div>
+
+        @endforelse
+
+    </div>
 
 </main>
 
@@ -496,12 +576,12 @@
                         <i class="bi bi-question-lg"></i>
                     </div>
 
-                    <h2 class="fw-bold mb-2">
+                    <h2 class="fw-bold mb-1">
                         Apakah pilihan ini sudah benar?
                     </h2>
 
-                    <p class="text-secondary fs-5 mb-4">
-                        Pastikan nomor dan nama kandidat sesuai dengan pilihan Anda.
+                    <p class="text-secondary mb-3">
+                        Pastikan nomor dan nama kandidat sesuai.
                     </p>
 
                     <div id="confirmationPhotoContainer">
@@ -517,7 +597,7 @@
                             id="confirmationPhotoPlaceholder"
                             class="confirmation-photo-placeholder"
                         >
-                            Belum ada foto
+                            <i class="bi bi-person-fill"></i>
                         </div>
 
                     </div>
@@ -554,6 +634,7 @@
 
                         <button
                             type="button"
+                            id="backButton"
                             class="btn btn-outline-secondary"
                             data-bs-dismiss="modal"
                         >
@@ -561,14 +642,29 @@
                             Kembali
                         </button>
 
-                        <button
-                            type="button"
-                            id="confirmVoteButton"
-                            class="btn btn-success"
+                        <form
+                            id="confirmVoteForm"
+                            action="{{ route('voting.store') }}"
+                            method="POST"
                         >
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            Ya, Pilih Kandidat Ini
-                        </button>
+                            @csrf
+
+                            <input
+                                type="hidden"
+                                name="candidate_id"
+                                id="confirmCandidateId"
+                                value=""
+                            >
+
+                            <button
+                                type="submit"
+                                id="confirmVoteButton"
+                                class="btn btn-success"
+                            >
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                Ya, Pilih Kandidat Ini
+                            </button>
+                        </form>
 
                     </div>
 
@@ -587,17 +683,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const votingForm =
-            document.getElementById('votingForm');
-
-        const radios =
-            document.querySelectorAll('.candidate-radio');
-
-        const openConfirmationButton =
-            document.getElementById('openConfirmationButton');
-
-        const confirmVoteButton =
-            document.getElementById('confirmVoteButton');
+        const candidateButtons =
+            document.querySelectorAll('.candidate-button');
 
         const confirmationModalElement =
             document.getElementById('confirmationModal');
@@ -616,44 +703,73 @@
                 'confirmationPhotoPlaceholder'
             );
 
-        const confirmationModal =
-            new bootstrap.Modal(confirmationModalElement);
+        const confirmVoteForm =
+            document.getElementById('confirmVoteForm');
 
-        let selectedCandidate = null;
+        const confirmCandidateId =
+            document.getElementById('confirmCandidateId');
+
+        const confirmVoteButton =
+            document.getElementById('confirmVoteButton');
+
+        if (
+            !confirmationModalElement ||
+            !confirmationNumber ||
+            !confirmationName ||
+            !confirmationPhoto ||
+            !confirmationPhotoPlaceholder ||
+            !confirmVoteForm ||
+            !confirmCandidateId ||
+            !confirmVoteButton
+        ) {
+            console.error(
+                'Komponen halaman voting tidak lengkap.'
+            );
+
+            return;
+        }
+
+        const confirmationModal =
+            new bootstrap.Modal(
+                confirmationModalElement
+            );
+
         let isSubmitting = false;
 
-        radios.forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                selectedCandidate = this;
-
-                openConfirmationButton.classList.add('active');
-
-                openConfirmationButton.innerHTML =
-                    '<i class="bi bi-check-circle me-2"></i>' +
-                    'Periksa Pilihan';
-            });
-        });
-
-        openConfirmationButton.addEventListener(
-            'click',
-            function () {
-                if (!selectedCandidate) {
+        candidateButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (isSubmitting) {
                     return;
                 }
 
+                const candidateId =
+                    this.dataset.candidateId || '';
+
+                const candidateNumber =
+                    this.dataset.candidateNumber || '-';
+
+                const candidateName =
+                    this.dataset.candidateName || '-';
+
+                const candidatePhoto =
+                    this.dataset.candidatePhoto || '';
+
+                confirmCandidateId.value =
+                    candidateId;
+
                 confirmationNumber.textContent =
-                    selectedCandidate.dataset.number;
+                    candidateNumber;
 
                 confirmationName.textContent =
-                    selectedCandidate.dataset.name;
+                    candidateName;
 
-                const photoUrl =
-                    selectedCandidate.dataset.photo;
+                if (candidatePhoto !== '') {
+                    confirmationPhoto.src =
+                        candidatePhoto;
 
-                if (photoUrl) {
-                    confirmationPhoto.src = photoUrl;
-
-                    confirmationPhoto.classList.remove('d-none');
+                    confirmationPhoto.classList.remove(
+                        'd-none'
+                    );
 
                     confirmationPhotoPlaceholder.classList.add(
                         'd-none'
@@ -661,7 +777,9 @@
                 } else {
                     confirmationPhoto.src = '';
 
-                    confirmationPhoto.classList.add('d-none');
+                    confirmationPhoto.classList.add(
+                        'd-none'
+                    );
 
                     confirmationPhotoPlaceholder.classList.remove(
                         'd-none'
@@ -669,13 +787,39 @@
                 }
 
                 confirmationModal.show();
+            });
+        });
+
+        confirmationModalElement.addEventListener(
+            'hidden.bs.modal',
+            function () {
+                if (isSubmitting) {
+                    return;
+                }
+
+                confirmCandidateId.value = '';
+                confirmationNumber.textContent = '-';
+                confirmationName.textContent = '-';
+                confirmationPhoto.src = '';
+
+                confirmationPhoto.classList.add(
+                    'd-none'
+                );
+
+                confirmationPhotoPlaceholder.classList.remove(
+                    'd-none'
+                );
             }
         );
 
-        confirmVoteButton.addEventListener(
-            'click',
-            function () {
-                if (!selectedCandidate || isSubmitting) {
+        confirmVoteForm.addEventListener(
+            'submit',
+            function (event) {
+                if (
+                    confirmCandidateId.value === '' ||
+                    isSubmitting
+                ) {
+                    event.preventDefault();
                     return;
                 }
 
@@ -684,10 +828,10 @@
                 confirmVoteButton.disabled = true;
 
                 confirmVoteButton.innerHTML =
-                    '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                    '<span class="spinner-border ' +
+                    'spinner-border-sm me-2" ' +
+                    'aria-hidden="true"></span>' +
                     'Menyimpan Pilihan...';
-
-                votingForm.submit();
             }
         );
     });
