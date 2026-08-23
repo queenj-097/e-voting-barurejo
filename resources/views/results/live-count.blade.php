@@ -282,7 +282,7 @@
                     <div class="small text-white-50">
                         REKAPITULASI LANGSUNG ·
                         <span id="sessionTitle">
-                            SESI 1
+                            SEMUA DUSUN
                         </span>
                     </div>
 
@@ -435,7 +435,7 @@
 <script>
     const selectedSession = new URLSearchParams(
         window.location.search
-    ).get('session') || '1';
+    ).get('session');
 
     const sessionTitles = {
         '1': 'SESI 1 — SENEPOSARI',
@@ -448,17 +448,17 @@
 
     if (sessionTitleElement) {
         sessionTitleElement.textContent =
-            sessionTitles[selectedSession]
-            ?? sessionTitles['1'];
+            selectedSession
+            ? (sessionTitles[selectedSession] ?? 'SEMUA DUSUN')
+            : 'SEMUA DUSUN';
     }
 
     const baseDataUrl =
         @json(route('results.live-count.data'));
 
-    const dataUrl =
-        baseDataUrl
-        + '?session='
-        + encodeURIComponent(selectedSession);
+    const dataUrl = selectedSession
+        ? baseDataUrl + '?session=' + encodeURIComponent(selectedSession)
+        : baseDataUrl;
 
     const groupsContainer =
         document.getElementById('groupsContainer');

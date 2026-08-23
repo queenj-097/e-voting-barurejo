@@ -59,8 +59,7 @@ class ResultController extends Controller
         Request $request
     ): JsonResponse {
         $session = (string) $request->query(
-            'session',
-            '1'
+            'session', ''
         );
 
         $sessionDusuns = [
@@ -79,8 +78,9 @@ class ResultController extends Controller
             ],
         ];
 
-        $activeDusuns = $sessionDusuns[$session]
-            ?? $sessionDusuns['1'];
+        $activeDusuns = $session
+            ? ($sessionDusuns[$session] ?? [])
+            : array_merge(...array_values($sessionDusuns));
 
         /*
          * Kandidat yang termasuk dalam sesi aktif.
