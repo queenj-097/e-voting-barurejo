@@ -546,8 +546,74 @@
             return;
         }
 
-        groupsContainer.innerHTML = groups
+        /*
+        * Jika tidak memilih sesi tertentu,
+        * gabungkan seluruh dusun menjadi satu rekap.
+        */
+        let displayGroups = groups;
+
+        if (!selectedSession) {
+            const candidateMap = {};
+            let totalVotes = 0;
+
+            groups.forEach(function (group) {
+                totalVotes += Number(group.total_votes ?? 0);
+
+                const candidates =
+                    Array.isArray(group.candidates)
+                        ? group.candidates
+                        : [];
+
+                candidates.forEach(function (candidate) {
+
+                    /*
+                    * Nomor kandidat digunakan sebagai kunci
+                    * karena nomor kandidat sama di setiap dusun.
+                    */
+                    const key = String(
+                        candidate.number ?? ''
+                    );
+
+                    if (!candidateMap[key]) {
+                        candidateMap[key] = {
+                            number: candidate.number,
+                            name: candidate.name,
+                            photo_url: candidate.photo_url,
+                            votes: 0,
+                        };
+                    }
+
+                    candidateMap[key].votes += Number(
+                        candidate.votes ?? 0
+                    );
+                });
+            });
+
+            const aggregatedCandidates =
+                Object.values(candidateMap);
+
+            aggregatedCandidates.forEach(function (candidate) {
+                candidate.percentage =
+                    totalVotes > 0
+                        ? (candidate.votes / totalVotes) * 100
+                        : 0;
+            });
+
+            /*
+            * Buat satu group saja untuk semua dusun.
+            */
+            displayGroups = [
+                {
+                    dusun: 'SEMUA DUSUN',
+                    total_votes: totalVotes,
+                    candidates: aggregatedCandidates,
+                }
+            ];
+        }
+
+        groupsContainer.innerHTML = displayGroups
             .map(function (group) {
+
                 const candidates =
                     Array.isArray(group.candidates)
                         ? group.candidates
@@ -555,6 +621,7 @@
 
                 const candidateRows = candidates
                     .map(function (candidate) {
+
                         const photoUrl =
                             normalizePhotoUrl(
                                 candidate.photo_url
@@ -629,6 +696,15 @@
                     })
                     .join('');
 
+                /*
+                * Untuk SEMUA DUSUN jangan tulis
+                * "Dusun SEMUA DUSUN".
+                */
+                const title =
+                    group.dusun === 'SEMUA DUSUN'
+                        ? 'Rekapitulasi Semua Dusun'
+                        : `Dusun ${escapeHtml(group.dusun)}`;
+
                 return `
                     <section class="dusun-section">
 
@@ -638,7 +714,7 @@
                             <div>
 
                                 <div class="dusun-title">
-                                    Dusun ${escapeHtml(group.dusun)}
+                                    ${title}
                                 </div>
 
                                 <div class="dusun-total">
